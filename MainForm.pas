@@ -116,35 +116,13 @@ begin
 
 end;
 
-{
-function absolute_bw1(z: double): TColor;
-begin
-    Result := RGB(
-        Round(Data[i]*-1),
-        Round(Data[i]*-1),
-        Round(Data[i]*-1)
-    );
-end;
-}
-
 function rgb2(z, min_z, max_z: double): TColor;
 var
   g: Double;
 begin
     g := (z - min_z) / (max_z - min_z);
-    Result := RGB(Round(g*255), 50, 110); // RGB(Round(g*255), Round(g*255), 50);
+    Result := RGB(Round(g*255), 50, 110);
 end;
-
-{
-function rgb3(z, min_z, max_z: double): TColor;
-var
-  c, g: Double;
-begin
-  g := (z - min_z) / (max_z - min_z);
-  c := colorsys.hsv_to_rgb(0.65-(g-0.08), 1, 0.2+g);
-  Result := RGB(Round(c[0]*256), Round(c[1]*256), Round(c[2]*256));
-end;
- }
 
 procedure TForm1.RefreshWaterFall;
 begin
@@ -165,7 +143,7 @@ begin
     TempFall.PixelFormat := pf24bit;
     TempFall.SetSize(DataSize, 1);
 
-    // 0. calculate min_z, max_z
+    // calculate min_z, max_z
     min_z := 0;
     max_z := -256;
     for i := 0 to DataSize do begin
@@ -173,27 +151,25 @@ begin
       if max_z < Data[i] then max_z := Data[i];
     end;
 
-    // 1. draw pixels line
+    // draw pixels line
     for i := 0 to DataSize do begin
       TempFall.Canvas.Pixels[i, 0] := rgb2(Data[i], min_z, max_z);
     end;
 
-    // 2. shift old waterfall image
+    // shift old waterfall image
     WFBitmap.Canvas.CopyRect(
       Rect(0, 1, WFBitmap.Width, WFBitmap.Height),
       WFBitmap.Canvas,
       WFBitmap.Canvas.ClipRect
     );
 
-    // 3. draw tempfall to waterfall
-    // WaterFall.Canvas.Draw(0, 1, TempFall);
-
+    // draw tempfall to waterfall
     WFBitmap.Canvas.StretchDraw(
         Rect(0, 0, WFBitmap.Width, 1),
         TempFall
     );
 
-    // 4. draw waterfall to screen
+    // draw waterfall to screen
     RefreshWaterFall;
 
   finally
@@ -279,7 +255,6 @@ begin
                           PChar(ExtractFilePath(Filename)), StartInfo, ProcInfo);
 
   if Result then begin
-    // WaitForSingleObject(ProcInfo.hProcess, INFINITE);
     while True do begin
       if WaitForSingleObject(ProcInfo.hProcess, 5) = WAIT_OBJECT_0 then Break;
       Application.ProcessMessages;

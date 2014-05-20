@@ -1,4 +1,5 @@
-Place here 3 files from osmocom's librtlsdr windows build:
+Place here 3 files from osmocom's librtlsdr windows build
+http://sdr.osmocom.org/trac/attachment/wiki/rtl-sdr/RelWithDebInfo.zip
 
 rtlsdr.dll
 libusb-1.0.dll
