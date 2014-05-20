@@ -1,0 +1,7 @@
+Place here 3 files from osmocom's librtlsdr windows build:
+
+rtlsdr.dll
+libusb-1.0.dll
+rtl_power.exe
+
+and then run rlpan.exe
