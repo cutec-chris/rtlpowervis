@@ -5,4 +5,6 @@ rtlsdr.dll
 libusb-1.0.dll
 rtl_power.exe
 
-and then run rlpan.exe
+and then run rtlpan.exe
+
+Also, it is better to have UAC turned off (as it ask for CreateProcess permissions).
