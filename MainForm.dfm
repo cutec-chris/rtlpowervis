@@ -15,6 +15,7 @@ object Form1: TForm1
   ShowHint = True
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     709
     419)

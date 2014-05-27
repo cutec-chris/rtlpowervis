@@ -38,6 +38,7 @@ type
     procedure WaterFallPaint(Sender: TObject);
     procedure WaterFallMouseLeave(Sender: TObject);
     procedure WaterFallMouseEnter(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
@@ -89,7 +90,6 @@ begin
   end;
 
   Processing := False;
-  WFBitmap.Free;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -114,6 +114,11 @@ begin
   WFBitmap.PixelFormat := pf24bit;
   WFBitmap.SetSize(1920, 100);
 
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  WFBitmap.Free;
 end;
 
 function rgb2(z, min_z, max_z: double): TColor;
@@ -169,7 +174,8 @@ begin
     );
 
     // draw waterfall to screen
-    RefreshWaterFall;
+    // RefreshWaterFall;
+    DrawWaterFallCursor(WFCursorX, WFCursorY);
 
   finally
     TempFall.Free;
@@ -414,7 +420,7 @@ begin
   WaterFall.Hint := Format('%.3f MHz', [Freq]);
 
   WFCursorX := X;
-  WFCursorX := Y;
+  WFCursorY := Y;
   DrawWaterFallCursor(X, Y);
 end;
 
