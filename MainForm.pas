@@ -43,8 +43,8 @@ type
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
     procedure AddLineToWaterFall(Data: array of double; DataSize: integer);
-    procedure RefreshWaterFall;
-    procedure DrawWaterFallCursor(X, Y: Integer);
+    procedure DrawWF;
+    procedure WaterFallPicture;
     { Private declarations }
   public
     { Public declarations }
@@ -58,9 +58,9 @@ var
   AppDir: String;
 
   WFBitmap: TBitmap;
+  WFCursor: Boolean = False;
   WFCursorX: Integer = -1;
   WFCursorY: Integer = -1;
-  DrawWFCursor: Boolean = False;
 
 implementation
 
@@ -129,7 +129,7 @@ begin
     Result := RGB(Round(g*255), 50, 110); // RGB(Round(g*255), Round(g*255), 50);
 end;
 
-procedure TForm1.RefreshWaterFall;
+procedure TForm1.WaterFallPicture;
 begin
     WaterFall.Canvas.StretchDraw(
         WaterFall.Canvas.ClipRect,
@@ -174,8 +174,7 @@ begin
     );
 
     // draw waterfall to screen
-    // RefreshWaterFall;
-    DrawWaterFallCursor(WFCursorX, WFCursorY);
+    DrawWF;
 
   finally
     TempFall.Free;
@@ -326,7 +325,7 @@ while Processing do begin
 
     // Init MaxPower[array]
     SetLength(MaxPower, DataSize);
-    if (MaxPowerReset) then begin
+    if MaxPowerReset then begin
       MaxPowerReset := False;
       for i := 0 to DataSize do MaxPower[i] := -256;
     end;
@@ -402,13 +401,13 @@ end;
 
 procedure TForm1.WaterFallMouseEnter(Sender: TObject);
 begin
-  DrawWFCursor := True;
+  WFCursor := True;
 end;
 
 procedure TForm1.WaterFallMouseLeave(Sender: TObject);
 begin
-  DrawWFCursor := False;
-  RefreshWaterfall;  // to remove red line
+  WFCursor := False;
+  WaterFallPicture;  // to remove red line
 end;
 
 procedure TForm1.WaterFallMouseMove(Sender: TObject; Shift: TShiftState;
@@ -421,27 +420,27 @@ begin
 
   WFCursorX := X;
   WFCursorY := Y;
-  DrawWaterFallCursor(X, Y);
+  DrawWF;
 end;
 
-procedure TForm1.DrawWaterFallCursor(X, Y: Integer);
+procedure TForm1.DrawWF;
 begin
-  RefreshWaterFall;
+  WaterFallPicture;
 
-  if DrawWFCursor then begin
+  if WFCursor then begin
     WaterFall.Canvas.Pen.Color := clRed;
-    WaterFall.Canvas.MoveTo(X, 0);
-    WaterFall.Canvas.LineTo(X, WaterFall.Height);
+    WaterFall.Canvas.MoveTo(WFCursorX, 0);
+    WaterFall.Canvas.LineTo(WFCursorX, WaterFall.Height);
 
     WaterFall.Canvas.Font.Color := clLime;
     WaterFall.Canvas.Brush.Style := bsClear;
-    WaterFall.Canvas.TextOut(X + 5, Y - 12, WaterFall.Hint);
+    WaterFall.Canvas.TextOut(WFCursorX + 5, WFCursorY - 12, WaterFall.Hint);
   end;
 end;
 
 procedure TForm1.WaterFallPaint(Sender: TObject);
 begin
-  DrawWaterFallCursor(WFCursorX, WFCursorY);  // on form resize etc
+  DrawWF;  // on form resize etc
 end;
 
 end.
