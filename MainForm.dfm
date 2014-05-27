@@ -20,6 +20,23 @@ object Form1: TForm1
     419)
   PixelsPerInch = 96
   TextHeight = 13
+  object WaterFall: TPaintBox
+    Left = 8
+    Top = 295
+    Width = 693
+    Height = 98
+    ParentCustomHint = False
+    Align = alCustom
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Color = clBtnFace
+    ParentColor = False
+    ParentShowHint = False
+    ShowHint = False
+    OnMouseEnter = WaterFallMouseEnter
+    OnMouseLeave = WaterFallMouseLeave
+    OnMouseMove = WaterFallMouseMove
+    OnPaint = WaterFallPaint
+  end
   object StatusBar: TStatusBar
     Left = 0
     Top = 400
@@ -231,32 +248,6 @@ object Form1: TForm1
     ShowHint = True
     TabOrder = 10
   end
-  object Panel1: TPanel
-    Left = 8
-    Top = 294
-    Width = 693
-    Height = 100
-    ParentCustomHint = False
-    Anchors = [akLeft, akRight, akBottom]
-    ParentShowHint = False
-    ShowHint = True
-    TabOrder = 11
-    object WaterFall: TPaintBox
-      Left = 1
-      Top = 1
-      Width = 691
-      Height = 98
-      ParentCustomHint = False
-      Align = alClient
-      ParentShowHint = False
-      ShowHint = True
-      OnMouseEnter = WaterFallMouseEnter
-      OnMouseLeave = WaterFallMouseLeave
-      OnMouseMove = WaterFallMouseMove
-      OnPaint = WaterFallPaint
-      ExplicitTop = 0
-    end
-  end
   object Chart1: TChart
     Left = 8
     Top = 39
@@ -268,6 +259,9 @@ object Form1: TForm1
     MarginLeft = 1
     MarginRight = 1
     MarginTop = 1
+    Title.Text.Strings = (
+      'TChart')
+    Title.Visible = False
     BottomAxis.LabelsFormat.TextAlignment = taCenter
     BottomAxis.Title.Caption = 'Hz'
     DepthAxis.LabelsFormat.TextAlignment = taCenter
@@ -280,7 +274,7 @@ object Form1: TForm1
     Zoom.Pen.Mode = pmNotXor
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 12
+    TabOrder = 11
     Anchors = [akLeft, akTop, akRight, akBottom]
     OnMouseMove = Chart1MouseMove
     DefaultCanvas = 'TGDIPlusCanvas'

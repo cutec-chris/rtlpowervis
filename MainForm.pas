@@ -21,11 +21,10 @@ type
     DrawMaxPower: TCheckBox;
     BitBtn2: TBitBtn;
     AutoAxis: TCheckBox;
-    Panel1: TPanel;
-    WaterFall: TPaintBox;
     Chart1: TChart;
     Series2: TLineSeries;
     Series1: TLineSeries;
+    WaterFall: TPaintBox;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -40,13 +39,11 @@ type
     procedure WaterFallMouseLeave(Sender: TObject);
     procedure WaterFallMouseEnter(Sender: TObject);
   private
-    procedure Log(S: String);
-    procedure FFTLog(S: String);
+    procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
-    procedure BinLog(S: String);
     procedure AddLineToWaterFall(Data: array of double; DataSize: integer);
     procedure RefreshWaterFall;
-    procedure DrawWaterFallCursor(X: Integer);
+    procedure DrawWaterFallCursor(X, Y: Integer);
     { Private declarations }
   public
     { Public declarations }
@@ -60,6 +57,8 @@ var
   AppDir: String;
 
   WFBitmap: TBitmap;
+  WFCursorX: Integer = -1;
+  WFCursorY: Integer = -1;
   DrawWFCursor: Boolean = False;
 
 implementation
@@ -89,6 +88,7 @@ begin
     Ini.Free;
   end;
 
+  Processing := False;
   WFBitmap.Free;
 end;
 
@@ -121,7 +121,7 @@ var
   g: Double;
 begin
     g := (z - min_z) / (max_z - min_z);
-    Result := RGB(Round(g*255), 50, 110);
+    Result := RGB(Round(g*255), 50, 110); // RGB(Round(g*255), Round(g*255), 50);
 end;
 
 procedure TForm1.RefreshWaterFall;
@@ -152,9 +152,8 @@ begin
     end;
 
     // draw pixels line
-    for i := 0 to DataSize do begin
+    for i := 0 to DataSize do
       TempFall.Canvas.Pixels[i, 0] := rgb2(Data[i], min_z, max_z);
-    end;
 
     // shift old waterfall image
     WFBitmap.Canvas.CopyRect(
@@ -177,9 +176,13 @@ begin
   end;
 end;
 
-procedure TForm1.Log(S: String);
+procedure TForm1.Log(Band: String; Bin: String = ''; FFT: String = '');
 begin
-  StatusBar.Panels[0].Text := S;
+  StatusBar.Panels[0].Text := Band;
+  if Bin <> '' then
+    StatusBar.Panels[1].Text := Bin;
+  if FFT <> '' then
+    StatusBar.Panels[2].Text := FFT;
 end;
 
 procedure TForm1.BitBtn2Click(Sender: TObject);
@@ -218,20 +221,9 @@ begin
   Chart1.Series[0].GetCursorValues(tmpx, tmpy);
   Temp := Chart1.Series[0].GetHorizAxis.LabelValue(tmpX);
   Temp := RemoveWhiteSpace( Temp );
-  Chart1.Hint := Chart1.Series[0].GetVertAxis.LabelValue(tmpY) + ' dB' + #13#10
-    + Format('%.3f MHz', [ StrToFloat( Temp ) / 1000000 ]);
-end;
-
-
-procedure TForm1.FFTLog(S: String);
-begin
-  StatusBar.Panels[2].Text := S;
-end;
-
-
-procedure TForm1.BinLog(S: String);
-begin
-  StatusBar.Panels[1].Text := S;
+  Chart1.Hint :=
+    'Signal: ' + Chart1.Series[0].GetVertAxis.LabelValue(tmpY) + ' dB' + #13#10
+    + Format('Frequency: %.3f MHz', [ StrToFloat( Temp ) / 1000000 ]);
 end;
 
 function ExecAndWait(const FileName,
@@ -272,7 +264,7 @@ var
   Power, MaxPower: Array of double;
   SpectrumStep, SpectrumStepSize: Double;
 begin
-// Flag for MaxPower[array] init
+// Flag to init MaxPower array
 MaxPowerReset := True;
 
 while Processing do begin
@@ -307,10 +299,9 @@ while Processing do begin
     SourceData.LoadFromFile('scan.csv');
     for S in SourceData do begin
       S2 := Copy(S, Pos(',', S)+1, Length(S)-Pos(',', S));
-      S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
-      S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
-      S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
-      S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
+      // cutting data before
+      for i := 1 to 4 do
+        S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
       DataString := DataString + Trim(Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2))) + ', ';
     end;
     DataString := Copy(DataString, 0, Length(DataString)-2);
@@ -337,9 +328,8 @@ while Processing do begin
     // Moving data to Power[array]
     for i := 0 to DataSize do begin
       if (Data[i]) = '-1.#J' then Data[i] := '-1.00';           // fix for -1.#J
-      Power[i] := StrToFloat( Trim(Data[i]) );
-      if (MaxPower[i] < Power[i]) then MaxPower[i] := Power[i]; // draw max power
-
+      Power[i] := StrToFloat( Trim(Data[i]) );                  // populate power
+      if (MaxPower[i] < Power[i]) then MaxPower[i] := Power[i]; // populate max power
     end;
 
     Log('Drawing chart...');
@@ -348,23 +338,25 @@ while Processing do begin
     SpectrumStepSize := (((TillMHZ.Value * 1000000) - (FromMHZ.Value * 1000000)) / DataSize);
     SpectrumStep := FromMHZ.Value * 1000000;
 
-    // Draw on chart
+    // Draw to chart
     Chart1.Series[0].Clear;
     Chart1.Series[1].Clear;
     for i := 0 to DataSize do begin
-      Chart1.Series[1].AddXY(SpectrumStep, MaxPower[i], '', clRed);
       Chart1.Series[0].AddXY(SpectrumStep, Power[i], '', clBlue);
+
+      if DrawMaxPower.Checked then
+        Chart1.Series[1].AddXY(SpectrumStep, MaxPower[i], '', clRed);
 
       SpectrumStep := SpectrumStep + SpectrumStepSize;
     end;
 
-    // Visibility of MaxPower on chart
+    // Visibility of chart MaxPower
     if DrawMaxPower.Checked then
       Chart1.Series[1].Visible := True
     else
       Chart1.Series[1].Visible := False;
 
-    // Automatic left axis on chart
+    // Automatic chart left axis
     if AutoAxis.Checked then begin
       Chart1.LeftAxis.Automatic := True;
     end else begin
@@ -373,12 +365,13 @@ while Processing do begin
       Chart1.LeftAxis.Maximum := 0;
     end;
 
-    // Draw waterfall
+    // Draw line to waterfall
     AddLineToWaterFall(Power, DataSize);
 
-    Log('Ready...');
-    BinLog( Format('Step: %.3f Hz', [SpectrumStepSize]) );
-    FFTLog('FFT bins: ' + IntToStr(DataSize));
+    Log('Ready...',
+      Format('Step: %.3f Hz', [SpectrumStepSize]),
+      'FFT bins: ' + IntToStr(DataSize)
+    );
 
   finally
     SourceData.Free;
@@ -409,7 +402,7 @@ end;
 procedure TForm1.WaterFallMouseLeave(Sender: TObject);
 begin
   DrawWFCursor := False;
-  RefreshWaterfall; // to remove red line
+  RefreshWaterfall;  // to remove red line
 end;
 
 procedure TForm1.WaterFallMouseMove(Sender: TObject; Shift: TShiftState;
@@ -419,20 +412,30 @@ var
 begin
   Freq := FromMHZ.Value + ( (TillMHZ.Value - FromMHZ.Value) / WaterFall.Width ) * X;
   WaterFall.Hint := Format('%.3f MHz', [Freq]);
-  DrawWaterFallCursor(X);
+
+  WFCursorX := X;
+  WFCursorX := Y;
+  DrawWaterFallCursor(X, Y);
 end;
 
-procedure TForm1.DrawWaterFallCursor(X: Integer);
+procedure TForm1.DrawWaterFallCursor(X, Y: Integer);
 begin
   RefreshWaterFall;
-  WaterFall.Canvas.Pen.Color := clRed;
-  WaterFall.Canvas.MoveTo(X, 0);
-  WaterFall.Canvas.LineTo(X, WaterFall.Height);
+
+  if DrawWFCursor then begin
+    WaterFall.Canvas.Pen.Color := clRed;
+    WaterFall.Canvas.MoveTo(X, 0);
+    WaterFall.Canvas.LineTo(X, WaterFall.Height);
+
+    WaterFall.Canvas.Font.Color := clLime;
+    WaterFall.Canvas.Brush.Style := bsClear;
+    WaterFall.Canvas.TextOut(X + 5, Y - 12, WaterFall.Hint);
+  end;
 end;
 
 procedure TForm1.WaterFallPaint(Sender: TObject);
 begin
-  RefreshWaterFall; // on form resize etc
+  DrawWaterFallCursor(WFCursorX, WFCursorY);  // on form resize etc
 end;
 
 end.
