@@ -44,7 +44,7 @@ type
     procedure MainLoop;
     procedure AddLineToWaterFall(Data: array of double; DataSize: integer);
     procedure DrawWF;
-    procedure WaterFallPicture;
+    procedure DrawWaterFallPicture;
     { Private declarations }
   public
     { Public declarations }
@@ -129,7 +129,7 @@ begin
     Result := RGB(Round(g*255), 50, 110); // RGB(Round(g*255), Round(g*255), 50);
 end;
 
-procedure TForm1.WaterFallPicture;
+procedure TForm1.DrawWaterFallPicture;
 begin
     WaterFall.Canvas.StretchDraw(
         WaterFall.Canvas.ClipRect,
@@ -390,13 +390,11 @@ end;
 procedure TForm1.PressResetMaxPowerLevel(Sender: TObject; var Key: Char);
 begin
   MaxPowerReset := True;
-  Application.ProcessMessages;
 end;
 
 procedure TForm1.ResetMaxPowerLevel(Sender: TObject);
 begin
   MaxPowerReset := True;
-  Application.ProcessMessages;
 end;
 
 procedure TForm1.WaterFallMouseEnter(Sender: TObject);
@@ -407,7 +405,7 @@ end;
 procedure TForm1.WaterFallMouseLeave(Sender: TObject);
 begin
   WFCursor := False;
-  WaterFallPicture;  // to remove red line
+  DrawWaterFallPicture;  // to remove red line
 end;
 
 procedure TForm1.WaterFallMouseMove(Sender: TObject; Shift: TShiftState;
@@ -425,7 +423,7 @@ end;
 
 procedure TForm1.DrawWF;
 begin
-  WaterFallPicture;
+  DrawWaterFallPicture;
 
   if WFCursor then begin
     WaterFall.Canvas.Pen.Color := clRed;
