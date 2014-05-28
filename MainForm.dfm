@@ -225,7 +225,7 @@ object Form1: TForm1
     ShowHint = True
     TabOrder = 8
   end
-  object BitBtn2: TBitBtn
+  object SavePicturesToFiles: TBitBtn
     Left = 539
     Top = 8
     Width = 162
@@ -235,7 +235,7 @@ object Form1: TForm1
     ParentShowHint = False
     ShowHint = True
     TabOrder = 9
-    OnClick = BitBtn2Click
+    OnClick = SavePicturesToFilesClick
   end
   object AutoAxis: TCheckBox
     Left = 421

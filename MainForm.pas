@@ -19,7 +19,7 @@ type
     PPM: TSpinEdit;
     ChooseDongle: TSpinEdit;
     DrawMaxPower: TCheckBox;
-    BitBtn2: TBitBtn;
+    SavePicturesToFiles: TBitBtn;
     AutoAxis: TCheckBox;
     Chart1: TChart;
     Series2: TLineSeries;
@@ -28,7 +28,7 @@ type
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure BitBtn2Click(Sender: TObject);
+    procedure SavePicturesToFilesClick(Sender: TObject);
     procedure Chart1MouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure ResetMaxPowerLevel(Sender: TObject);
@@ -113,7 +113,6 @@ begin
   WFBitmap := TBitmap.Create;
   WFBitmap.PixelFormat := pf24bit;
   WFBitmap.SetSize(1920, 100);
-
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -190,7 +189,7 @@ begin
     StatusBar.Panels[2].Text := FFT;
 end;
 
-procedure TForm1.BitBtn2Click(Sender: TObject);
+procedure TForm1.SavePicturesToFilesClick(Sender: TObject);
 var
   FileName: String;
 begin
@@ -202,33 +201,15 @@ begin
   Log('Spectrum and waterfall saved');
 end;
 
-function RemoveWhiteSpace(const s: string): string;
-var
-  i, j: Integer;
-begin
-  SetLength(Result, Length(s));
-  j := 0;
-  for i := 1 to Length(s) do begin
-    if not TCharacter.IsWhiteSpace(s[i]) then begin
-      inc(j);
-      Result[j] := s[i];
-    end;
-  end;
-  SetLength(Result, j);
-end;
-
 procedure TForm1.Chart1MouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
   tmpX, tmpY: Double;
-  temp: String;
 begin
   Chart1.Series[0].GetCursorValues(tmpx, tmpy);
-  Temp := Chart1.Series[0].GetHorizAxis.LabelValue(tmpX);
-  Temp := RemoveWhiteSpace( Temp );
   Chart1.Hint :=
     'Signal: ' + Chart1.Series[0].GetVertAxis.LabelValue(tmpY) + ' dB' + #13#10
-    + Format('Frequency: %.3f MHz', [ StrToFloat( Temp ) / 1000000 ]);
+    + 'Freq: ' + Chart1.Series[0].GetHorizAxis.LabelValue(tmpX) + ' Hz';
 end;
 
 function ExecAndWait(const FileName,
@@ -332,8 +313,13 @@ while Processing do begin
 
     // Moving data to Power[array]
     for i := 0 to DataSize do begin
-      if (Data[i]) = '-1.#J' then Data[i] := '-1.00';           // fix for -1.#J
-      Power[i] := StrToFloat( Trim(Data[i]) );                  // populate power
+      if (Data[i]) = '-1.#J' then Data[i] := '-1.00';           // fix for -1.#J rtl_power
+      try
+        Power[i] := StrToFloat( Trim(Data[i]) );                // populate power
+      except
+        // probably this will fix issue for reddit users :)
+        Power[i] := -1.0;
+      end;
       if (MaxPower[i] < Power[i]) then MaxPower[i] := Power[i]; // populate max power
     end;
 
