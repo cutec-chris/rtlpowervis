@@ -267,7 +267,7 @@ var
   SourceData, Data: TStringList;
   DataSize, DrawStep, DrawFreq, i: Integer;
   Power, MaxPower: Array of double;
-  SpectrumStep, SpectrumStepSize: Double;
+  SpectrumX, SpectrumStep: Double;
 begin
 // Flag to init MaxPower array
 MaxPowerReset := True;
@@ -340,19 +340,19 @@ while Processing do begin
     Log('Drawing chart...');
 
     // Calculate X axis
-    SpectrumStepSize := (((TillMHZ.Value * 1000000) - (FromMHZ.Value * 1000000)) / DataSize);
-    SpectrumStep := FromMHZ.Value * 1000000;
+    SpectrumStep := (((TillMHZ.Value * 1000000) - (FromMHZ.Value * 1000000)) / DataSize);
+    SpectrumX := FromMHZ.Value * 1000000;
 
     // Draw to chart
     Chart1.Series[0].Clear;
     Chart1.Series[1].Clear;
     for i := 0 to DataSize do begin
-      Chart1.Series[0].AddXY(SpectrumStep, Power[i], '', clBlue);
+      Chart1.Series[0].AddXY(SpectrumX, Power[i], '', clBlue);
 
       if DrawMaxPower.Checked then
-        Chart1.Series[1].AddXY(SpectrumStep, MaxPower[i], '', clRed);
+        Chart1.Series[1].AddXY(SpectrumX, MaxPower[i], '', clRed);
 
-      SpectrumStep := SpectrumStep + SpectrumStepSize;
+      SpectrumX := SpectrumX + SpectrumStep;
     end;
 
     // Visibility of chart MaxPower
@@ -374,7 +374,7 @@ while Processing do begin
     AddLineToWaterFall(Power, DataSize);
 
     Log('Ready...',
-      Format('Step: %.3f Hz', [SpectrumStepSize]),
+      Format('Step: %.3f Hz', [SpectrumStep]),
       'FFT bins: ' + IntToStr(DataSize)
     );
 
