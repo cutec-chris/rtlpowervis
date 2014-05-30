@@ -67,30 +67,31 @@ type
     procedure Spectrumgraphcolor1Click(Sender: TObject);
     procedure Spectrummaxcolor1Click(Sender: TObject);
   private
+    procedure AddLineToWaterFall(DataSize: integer);
+    procedure DrawSP;
+    procedure DrawWaterFallPicture;
+    procedure DrawWF;
+    procedure InitPowerArrays(var DataSize: integer);
+    procedure LoadPresetFromFile(F: String);
+    function  LoadRtlPowerData(var Data: TStringList): integer;
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
-    procedure AddLineToWaterFall(Data: array of double; DataSize: integer);
-    procedure DrawWF;
-    procedure DrawWaterFallPicture;
-    procedure DrawSP;
-    function LoadRtlPowerData(var Data: TStringList): integer;
-    function PrepareCommandLine: String;
+    function  PrepareCommandLine: String;
     procedure ProcessVisualSettings;
-    procedure ProcessChart(var Power, MaxPower: array of Double;
-      var DataSize: integer);
-    procedure LoadPresetFromFile(F: String);
+    procedure ProcessChart(var DataSize: integer);
+    procedure ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
     procedure SavePresetToFile(F: String);
-    { Private declarations }
   public
-    { Public declarations }
   end;
 
 var
+  AppDir: String;
   Form1: TForm1;
   Ini: TIniFile;
   Processing: Boolean = False;
   MaxPowerReset: Boolean = False;
-  AppDir: String;
+
+  Power, MaxPower: Array of Double;
 
   WFBitmap: TBitmap;
 
@@ -112,8 +113,12 @@ implementation
 procedure TForm1.StartStopClick(Sender: TObject);
 begin
   Processing := not Processing;
-  if Processing then StartStop.Caption := 'STOP' else StartStop.Caption := 'START';
-  if Processing then MainLoop();
+  if Processing then begin
+    MaxPowerReset := True;
+    StartStop.Caption := 'STOP';
+    MainLoop();
+  end else
+    StartStop.Caption := 'START';
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -232,7 +237,7 @@ begin
   );
 end;
 
-procedure TForm1.AddLineToWaterFall(Data: array of double; DataSize: integer);
+procedure TForm1.AddLineToWaterFall(DataSize: integer);
 var
   i: integer;
   TempFall: TBitmap;
@@ -247,13 +252,13 @@ begin
     min_z := 0;
     max_z := -120;
     for i := 0 to DataSize do begin
-      if min_z > Data[i] then min_z := Data[i];
-      if max_z < Data[i] then max_z := Data[i];
+      if min_z > Power[i] then min_z := Power[i];
+      if max_z < Power[i] then max_z := Power[i];
     end;
 
     // draw pixels line
     for i := 0 to DataSize do
-      TempFall.Canvas.Pixels[i, 0] := rgb2(Data[i], min_z, max_z);
+      TempFall.Canvas.Pixels[i, 0] := rgb2(Power[i], min_z, max_z);
 
     // shift old waterfall image
     WFBitmap.Canvas.CopyRect(
@@ -398,7 +403,7 @@ begin
   Chart1.BottomAxis.Visible := BottomAxis.Checked;
 end;
 
-procedure TForm1.ProcessChart(var Power, MaxPower: Array of Double; var DataSize: integer);
+procedure TForm1.ProcessChart(var DataSize: integer);
 var
   i: integer;
   SpectrumX, SpectrumStep: Double;
@@ -429,16 +434,19 @@ var
 begin
   SourceData := TStringList.Create;
   try
-    // Loading rtl_power data
     Data.Clear;
     DataString := '';
+
+    // Loading rtl_power scan results
     SourceData.LoadFromFile(AppDir + 'scan.csv');
 
     for S in SourceData do begin
+      // trim first unnecessary data
       S2 := Copy(S, Pos(',', S)+1, Length(S)-Pos(',', S));
-      // cutting unnecessary data before
+      // cutting other unnecessary things before interesting data
       for i := 1 to 4 do
         S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
+      // joining new interesting data
       DataString := DataString + Trim(Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2))) + ', ';
     end;
     DataString := Copy(DataString, 0, Length(DataString)-2);
@@ -468,47 +476,53 @@ begin
   Result := CommandLine;
 end;
 
+procedure TForm1.InitPowerArrays(var DataSize: integer);
+var
+  i: integer;
+begin
+  SetLength(Power, DataSize + 1);
+  SetLength(MaxPower, DataSize + 1);
+  if MaxPowerReset then begin
+    MaxPowerReset := False;
+    for i := 0 to DataSize do MaxPower[i] := -120.0;
+  end;
+end;
+
+procedure TForm1.ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
+var
+  i: integer;
+begin
+  // Succesfully parse data strings
+  FormatSettings.DecimalSeparator := '.';
+
+  for i := 0 to DataSize do begin
+    if (Data[i]) = '-1.#J' then Data[i] := '-1.00'; // fix -1.#J rtl_power
+    Power[i] := StrToFloat( Trim(Data[i]) );        // populate power
+    if (MaxPower[i] < Power[i]) then
+      MaxPower[i] := Power[i];                      // populate max power
+  end;
+end;
+
 procedure TForm1.MainLoop;
 var
   Data: TStringList;
   DataSize, i: Integer;
-  Power, MaxPower: Array of Double;
 begin
-// Flag to init MaxPower array
-MaxPowerReset := True;
 while Processing do begin
-
   Log(Format('Scanning %d-%d Hz', [FromMHZ.Value, TillMHZ.Value]));
   ExecAndWait(AppDir + 'rtl_power.exe', PrepareCommandLine, SW_HIDE);
   Data := TStringList.Create;
   try
     DataSize := LoadRtlPowerData(Data);
-    SetLength(Power, DataSize + 1);
-    SetLength(MaxPower, DataSize + 1);
-
-    // Init MaxPower[array]
-    if MaxPowerReset then begin
-      MaxPowerReset := False;
-      for i := 0 to DataSize do MaxPower[i] := -120.0;
-    end;
-
-    // Succesfully parse data strings
-    FormatSettings.DecimalSeparator := '.';
-    for i := 0 to DataSize do begin
-      if (Data[i]) = '-1.#J' then Data[i] := '-1.00';            // fix -1.#J rtl_power
-      Power[i] := StrToFloat( Trim(Data[i]) );                   // populate power
-      if (MaxPower[i] < Power[i]) then MaxPower[i] := Power[i];  // populate max power
-    end;
-
-    ProcessChart(Power, MaxPower, DataSize);
+    InitPowerArrays(DataSize);
+    ParseRtlPowerData(Data, DataSize);
+    ProcessChart(DataSize);
     ProcessVisualSettings;
-    AddLineToWaterFall(Power, DataSize);
-
-    Log('Ready...');
+    AddLineToWaterFall(DataSize);
   finally
     Data.Free;
   end;
-
+  Log('Ready...');
   Application.ProcessMessages;
 end;
 end;
