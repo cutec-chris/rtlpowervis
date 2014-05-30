@@ -34,7 +34,7 @@ object Form1: TForm1
     OnMouseLeave = WaterFallMouseLeave
     OnMouseMove = WaterFallMouseMove
     OnPaint = WaterFallPaint
-    ExplicitWidth = 778
+    ExplicitLeft = 1
   end
   object Splitter1: TSplitter
     Left = 0
@@ -304,12 +304,13 @@ object Form1: TForm1
       TabOrder = 7
     end
     object SavePicturesToFiles: TBitBtn
-      Left = 613
+      Left = 688
       Top = 8
-      Width = 162
+      Width = 87
       Height = 25
+      Hint = 'Save spectrum and waterfall to bitmap files'
       ParentCustomHint = False
-      Caption = 'Save spectrum && waterfall'
+      Caption = 'Save images'
       ParentShowHint = False
       ShowHint = True
       TabOrder = 8
@@ -349,5 +350,39 @@ object Form1: TForm1
       ShowHint = True
       TabOrder = 11
     end
+    object PresetBtn: TBitBtn
+      Left = 612
+      Top = 8
+      Width = 75
+      Height = 25
+      Hint = 'Load and save program presets'
+      Caption = 'Presets...'
+      TabOrder = 12
+      OnClick = PresetBtnClick
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 24
+    Top = 352
+    object Loadpreset1: TMenuItem
+      Caption = 'Load preset...'
+      OnClick = Loadpreset1Click
+    end
+    object Savepreset1: TMenuItem
+      Caption = 'Save preset...'
+      OnClick = Savepreset1Click
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    DefaultExt = 'ini'
+    Filter = 'rtl_panorama preset files|*.ini'
+    Left = 90
+    Top = 352
+  end
+  object SaveDialog1: TSaveDialog
+    DefaultExt = 'ini'
+    Filter = 'rtl_panorama preset files|*.ini'
+    Left = 154
+    Top = 352
   end
 end

@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Buttons,
   Vcl.ExtCtrls, Math, Vcl.Samples.Spin, IniFiles, VclTee.TeeGDIPlus, Character,
-  VCLTee.TeEngine, VCLTee.TeeProcs, VCLTee.Chart, VCLTee.Series, VCLTee.BubbleCh;
+  VCLTee.TeEngine, VCLTee.TeeProcs, VCLTee.Chart, VCLTee.Series, VCLTee.BubbleCh,
+  Vcl.Menus;
 
 type
   TForm1 = class(TForm)
@@ -29,6 +30,12 @@ type
     LeftAxis: TCheckBox;
     BottomAxis: TCheckBox;
     Splitter1: TSplitter;
+    PresetBtn: TBitBtn;
+    PopupMenu1: TPopupMenu;
+    Loadpreset1: TMenuItem;
+    Savepreset1: TMenuItem;
+    OpenDialog1: TOpenDialog;
+    SaveDialog1: TSaveDialog;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -47,13 +54,23 @@ type
     procedure Chart1MouseLeave(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure PresetBtnClick(Sender: TObject);
+    procedure Loadpreset1Click(Sender: TObject);
+    procedure Savepreset1Click(Sender: TObject);
   private
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
     procedure AddLineToWaterFall(Data: array of double; DataSize: integer);
     procedure DrawWF;
     procedure DrawWaterFallPicture;
-    procedure DrawSC;
+    procedure DrawSP;
+    function LoadRtlPowerData(var Data: TStringList): integer;
+    function PrepareCommandLine: String;
+    procedure ProcessVisualSettings;
+    procedure ProcessChart(var Power, MaxPower: array of Double;
+      var DataSize: integer);
+    procedure LoadPresetFromFile(F: String);
+    procedure SavePresetToFile(F: String);
     { Private declarations }
   public
     { Public declarations }
@@ -89,7 +106,13 @@ end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Ini := TIniFile.Create( ChangeFileExt(Application.ExeName, '.ini') );
+  SavePresetToFile( ChangeFileExt(Application.ExeName, '.ini') );
+  Processing := False;
+end;
+
+procedure TForm1.SavePresetToFile(F: String);
+begin
+  Ini := TIniFile.Create(F);
   try
     Ini.WriteInteger('App', 'FromMHZ',    FromMHZ.Value);
     Ini.WriteInteger('App', 'TillMHZ',    TillMHZ.Value);
@@ -105,15 +128,18 @@ begin
   finally
     Ini.Free;
   end;
-
-  Processing := False;
 end;
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TForm1.Loadpreset1Click(Sender: TObject);
 begin
-  AppDir := ExtractFilePath(Application.ExeName);
+  OpenDialog1.InitialDir := AppDir;
+  if OpenDialog1.Execute then
+    LoadPresetFromFile(OpenDialog1.FileName);
+end;
 
-  Ini := TIniFile.Create( ChangeFileExt(Application.ExeName, '.ini') );
+procedure TForm1.LoadPresetFromFile(F: String);
+begin
+  Ini := TIniFile.Create(F);
   try
     FromMHZ.Value :=        Ini.ReadInteger('App', 'FromMHZ', 64000000);
     TillMHZ.Value :=        Ini.ReadInteger('App', 'TillMHZ', 108000000);
@@ -129,6 +155,13 @@ begin
   finally
     Ini.Free;
   end;
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  AppDir := ExtractFilePath(Application.ExeName);
+
+  LoadPresetFromFile( ChangeFileExt(Application.ExeName, '.ini') );
 
   WFBitmap := TBitmap.Create;
   WFBitmap.PixelFormat := pf24bit;
@@ -207,7 +240,7 @@ begin
 
     // draw waterfall and spectrum to screen
     DrawWF;
-    DrawSC;
+    DrawSP;
 
   finally
     TempFall.Free;
@@ -216,6 +249,7 @@ end;
 
 procedure TForm1.Log(Band: String; Bin: String = ''; FFT: String = '');
 begin
+  if Band <> '' then
   StatusBar.Panels[0].Text := Band;
   if Bin <> '' then
     StatusBar.Panels[1].Text := Bin;
@@ -233,6 +267,13 @@ begin
   Chart1.SaveToBitmapFile(AppDir + 'spectrum_' + Filename);
   WFBitmap.SaveToFile(AppDir + 'waterfall_' + Filename);
   Log('Spectrum and waterfall saved');
+end;
+
+procedure TForm1.Savepreset1Click(Sender: TObject);
+begin
+  SaveDialog1.InitialDir := AppDir;
+  if SaveDialog1.Execute then
+    SavePresetToFile(SaveDialog1.FileName);
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
@@ -262,7 +303,7 @@ begin
 
   SPCursorX := X;
   SPCursorY := Y;
-  DrawSC;
+  DrawSP;
 end;
 
 function ExecAndWait(const FileName,
@@ -295,90 +336,39 @@ begin
   end;
 end;
 
-procedure TForm1.MainLoop;
+procedure TForm1.ProcessVisualSettings;
+begin
+  // Visibility of chart MaxPower
+  if DrawMaxPower.Checked then
+    Chart1.Series[1].Visible := True
+  else
+    Chart1.Series[1].Visible := False;
+
+  // Automatic chart dB axis
+  if AutoAxis.Checked then begin
+    Chart1.LeftAxis.Automatic := True;
+  end else begin
+    Chart1.LeftAxis.Automatic := False;
+    Chart1.LeftAxis.Minimum := -120;
+    Chart1.LeftAxis.Maximum := 0;
+  end;
+
+  // Chart axis visibility
+  Chart1.LeftAxis.Visible := LeftAxis.Checked;
+  Chart1.BottomAxis.Visible := BottomAxis.Checked;
+end;
+
+procedure TForm1.ProcessChart(var Power, MaxPower: Array of Double; var DataSize: integer);
 var
-  CommandLine, DataString, S, S2: String;
-  SourceData, Data: TStringList;
-  DataSize, DrawStep, DrawFreq, i: Integer;
-  Power, MaxPower: Array of Double;
+  i: integer;
   SpectrumX, SpectrumStep: Double;
 begin
-// Flag to init MaxPower array
-MaxPowerReset := True;
+    Chart1.Series[0].Clear;
+    Chart1.Series[1].Clear;
 
-while Processing do begin
-
-  Log('Scanning '
-    + IntToStr(FromMHZ.Value) + '-'
-    + IntToStr(TillMHZ.Value) + ' Hz...');
-
-  // Scan using rtl_power
-  CommandLine := '-f ' + IntToStr(FromMHZ.Value) + ':'
-                       + IntToStr(TillMHZ.Value) + ':'
-                       + StepSize.Text;
-  CommandLine := CommandLine + ' -g ' + Gain.Text;
-  CommandLine := CommandLine + ' -p ' + IntToStr(PPM.Value);
-  CommandLine := CommandLine + ' -d ' + IntToStr(ChooseDongle.Value);
-
-  ExecAndWait(
-    AppDir + 'rtl_power.exe',
-    CommandLine + ' -1 -i 1s scan.csv',
-    SW_HIDE
-  );
-
-  Data := TStringList.Create;
-  SourceData := TStringList.Create;
-  try
-
-    Log('Parsing FFT data...');
-
-    // Loading rtl_power data
-    DataString := '';
-    SourceData.LoadFromFile('scan.csv');
-    for S in SourceData do begin
-      S2 := Copy(S, Pos(',', S)+1, Length(S)-Pos(',', S));
-      // cutting unnecessary data before
-      for i := 1 to 4 do
-        S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
-      DataString := DataString + Trim(Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2))) + ', ';
-    end;
-    DataString := Copy(DataString, 0, Length(DataString)-2);
-
-    // Loading parsed lines as strings into Data
-    Data.Clear;
-    Data.Delimiter := ',';
-    Data.DelimitedText := DataString;
-
-    // Succesfully parse with current locale
-    FormatSettings.DecimalSeparator := '.';
-
-    // Calculating size of data
-    DataSize := Data.Count - 1;
-    SetLength(Power, DataSize + 1);
-
-    // Init MaxPower[array]
-    SetLength(MaxPower, DataSize + 1);
-    if MaxPowerReset then begin
-      MaxPowerReset := False;
-      for i := 0 to DataSize do MaxPower[i] := -120.0;
-    end;
-
-    // Moving data to Power[array]
-    for i := 0 to DataSize do begin
-      if (Data[i]) = '-1.#J' then Data[i] := '-1.00';            // fix for -1.#J rtl_power
-      Power[i] := StrToFloat( Trim(Data[i]) );                   // populate power
-      if (MaxPower[i] < Power[i]) then MaxPower[i] := Power[i];  // populate max power
-    end;
-
-    Log('Drawing chart...');
-
-    // Calculate X axis
     SpectrumStep := (TillMHZ.Value  - FromMHZ.Value) / DataSize;
     SpectrumX := FromMHZ.Value;
 
-    // Draw to chart
-    Chart1.Series[0].Clear;
-    Chart1.Series[1].Clear;
     for i := 0 to DataSize do begin
       Chart1.Series[0].AddXY(SpectrumX, Power[i], '', clBlue);
 
@@ -388,40 +378,104 @@ while Processing do begin
       SpectrumX := SpectrumX + SpectrumStep;
     end;
 
-    // Visibility of chart MaxPower
-    if DrawMaxPower.Checked then
-      Chart1.Series[1].Visible := True
-    else
-      Chart1.Series[1].Visible := False;
+    Log('', Format('Step: %.3f Hz', [SpectrumStep]), 'FFT bins: ' + IntToStr(DataSize));
+end;
 
-    // Automatic chart left axis
-    if AutoAxis.Checked then begin
-      Chart1.LeftAxis.Automatic := True;
-    end else begin
-      Chart1.LeftAxis.Automatic := False;
-      Chart1.LeftAxis.Minimum := -120;
-      Chart1.LeftAxis.Maximum := 0;
+function TForm1.LoadRtlPowerData(var Data: TStringList): integer;
+var
+  i: Integer;
+  S, S2, DataString: String;
+  SourceData: TStringList;
+begin
+  SourceData := TStringList.Create;
+  try
+    // Loading rtl_power data
+    Data.Clear;
+    DataString := '';
+    SourceData.LoadFromFile(AppDir + 'scan.csv');
+
+    for S in SourceData do begin
+      S2 := Copy(S, Pos(',', S)+1, Length(S)-Pos(',', S));
+      // cutting unnecessary data before
+      for i := 1 to 4 do
+        S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
+      DataString := DataString + Trim(Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2))) + ', ';
     end;
-
-    // Chart axis visibility
-    Chart1.LeftAxis.Visible := LeftAxis.Checked;
-    Chart1.BottomAxis.Visible := BottomAxis.Checked;
-
-    // Draw line to waterfall
-    AddLineToWaterFall(Power, DataSize);
-
-    Log('Ready...',
-      Format('Step: %.3f Hz', [SpectrumStep]),
-      'FFT bins: ' + IntToStr(DataSize)
-    );
-
+    DataString := Copy(DataString, 0, Length(DataString)-2);
   finally
     SourceData.Free;
+  end;
+
+  // Loading parsed lines as strings into Data
+  Data.Delimiter := ',';
+  Data.DelimitedText := DataString;
+
+  Result := Data.Count - 1;
+end;
+
+function TForm1.PrepareCommandLine: String;
+var
+  CommandLine: String;
+begin
+  CommandLine := '-f ' + IntToStr(FromMHZ.Value) + ':'
+                       + IntToStr(TillMHZ.Value) + ':'
+                       + StepSize.Text;
+  CommandLine := CommandLine + ' -g ' + Gain.Text;
+  CommandLine := CommandLine + ' -p ' + IntToStr(PPM.Value);
+  CommandLine := CommandLine + ' -d ' + IntToStr(ChooseDongle.Value);
+  CommandLine := CommandLine + ' -1 -i 1s scan.csv';
+
+  Result := CommandLine;
+end;
+
+procedure TForm1.MainLoop;
+var
+  Data: TStringList;
+  DataSize, i: Integer;
+  Power, MaxPower: Array of Double;
+begin
+// Flag to init MaxPower array
+MaxPowerReset := True;
+while Processing do begin
+
+  Log(Format('Scanning %d-%d Hz', [FromMHZ.Value, TillMHZ.Value]));
+  ExecAndWait(AppDir + 'rtl_power.exe', PrepareCommandLine, SW_HIDE);
+  Data := TStringList.Create;
+  try
+    DataSize := LoadRtlPowerData(Data);
+    SetLength(Power, DataSize + 1);
+    SetLength(MaxPower, DataSize + 1);
+
+    // Init MaxPower[array]
+    if MaxPowerReset then begin
+      MaxPowerReset := False;
+      for i := 0 to DataSize do MaxPower[i] := -120.0;
+    end;
+
+    // Succesfully parse data strings
+    FormatSettings.DecimalSeparator := '.';
+    for i := 0 to DataSize do begin
+      if (Data[i]) = '-1.#J' then Data[i] := '-1.00';            // fix -1.#J rtl_power
+      Power[i] := StrToFloat( Trim(Data[i]) );                   // populate power
+      if (MaxPower[i] < Power[i]) then MaxPower[i] := Power[i];  // populate max power
+    end;
+
+    ProcessChart(Power, MaxPower, DataSize);
+    ProcessVisualSettings;
+    AddLineToWaterFall(Power, DataSize);
+
+    Log('Ready...');
+  finally
     Data.Free;
   end;
 
   Application.ProcessMessages;
 end;
+end;
+
+procedure TForm1.PresetBtnClick(Sender: TObject);
+begin
+  PopupMenu1.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
 end;
 
 procedure TForm1.PressResetMaxPowerLevel(Sender: TObject; var Key: Char);
@@ -473,7 +527,7 @@ begin
   end;
 end;
 
-procedure TForm1.DrawSC;
+procedure TForm1.DrawSP;
 begin
   Chart1.Repaint;
 
