@@ -365,6 +365,17 @@ object Form1: TForm1
       Caption = 'Limit waterfall to screen'
       OnClick = InvertMenuitem
     end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object Spectrumgraphcolor1: TMenuItem
+      Caption = 'Spectrum graph color'
+      OnClick = Spectrumgraphcolor1Click
+    end
+    object Spectrummaxcolor1: TMenuItem
+      Caption = 'Spectrum max color'
+      OnClick = Spectrummaxcolor1Click
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = 'ini'
@@ -376,6 +387,10 @@ object Form1: TForm1
     DefaultExt = 'ini'
     Filter = 'rtl_panorama preset files|*.ini'
     Left = 154
+    Top = 352
+  end
+  object ColorDialog1: TColorDialog
+    Left = 216
     Top = 352
   end
 end

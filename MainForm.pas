@@ -38,6 +38,10 @@ type
     LeftAxis: TMenuItem;
     BottomAxis: TMenuItem;
     LimitWaterFall: TMenuItem;
+    ColorDialog1: TColorDialog;
+    N2: TMenuItem;
+    Spectrumgraphcolor1: TMenuItem;
+    Spectrummaxcolor1: TMenuItem;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -60,6 +64,8 @@ type
     procedure Loadpreset1Click(Sender: TObject);
     procedure Savepreset1Click(Sender: TObject);
     procedure InvertMenuitem(Sender: TObject);
+    procedure Spectrumgraphcolor1Click(Sender: TObject);
+    procedure Spectrummaxcolor1Click(Sender: TObject);
   private
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
@@ -96,6 +102,9 @@ var
   SPCursorX: Integer = -1;
   SPCursorY: Integer = -1;
 
+  LevelColor: TColor = clBlue;
+  MaxColor: TColor = clRed;
+
 implementation
 
 {$R *.dfm}
@@ -129,6 +138,8 @@ begin
     Ini.WriteInteger('App', 'PPM',        PPM.Value);
     Ini.WriteInteger('App', 'Dongle',     ChooseDongle.Value);
     Ini.WriteInteger('App', 'SplitterY',  Chart1.Height);
+    Ini.WriteInteger('App', 'LevelColor', LevelColor);
+    Ini.WriteInteger('App', 'MaxColor',   MaxColor);
   finally
     Ini.Free;
   end;
@@ -157,6 +168,8 @@ begin
     PPM.Value :=            Ini.ReadInteger('App', 'PPM', 0);
     ChooseDongle.Value :=   Ini.ReadInteger('App', 'Dongle', 0);
     Chart1.Height :=        Ini.ReadInteger('App', 'SplitterY', 250);
+    LevelColor :=           Ini.ReadInteger('App', 'LevelColor', clBlue);
+    MaxColor :=             Ini.ReadInteger('App', 'MaxColor', clRed);
   finally
     Ini.Free;
   end;
@@ -293,6 +306,16 @@ begin
     SavePresetToFile(SaveDialog1.FileName);
 end;
 
+procedure TForm1.Spectrumgraphcolor1Click(Sender: TObject);
+begin
+  if ColorDialog1.Execute then LevelColor := ColorDialog1.Color;
+end;
+
+procedure TForm1.Spectrummaxcolor1Click(Sender: TObject);
+begin
+  if ColorDialog1.Execute then MaxColor := ColorDialog1.Color;
+end;
+
 procedure TForm1.Splitter1Moved(Sender: TObject);
 begin
   DrawWF;
@@ -387,10 +410,10 @@ begin
     SpectrumX := FromMHZ.Value;
 
     for i := 0 to DataSize do begin
-      Chart1.Series[0].AddXY(SpectrumX, Power[i], '', clBlue);
+      Chart1.Series[0].AddXY(SpectrumX, Power[i], '', LevelColor);
 
       if DrawMaxPower.Checked then
-        Chart1.Series[1].AddXY(SpectrumX, MaxPower[i], '', clRed);
+        Chart1.Series[1].AddXY(SpectrumX, MaxPower[i], '', MaxColor);
 
       SpectrumX := SpectrumX + SpectrumStep;
     end;
