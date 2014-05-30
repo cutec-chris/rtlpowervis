@@ -11,6 +11,11 @@ uses
 type
   TForm1 = class(TForm)
     StatusBar: TStatusBar;
+    Chart1: TChart;
+    Series2: TLineSeries;
+    Series1: TLineSeries;
+    WaterFall: TPaintBox;
+    Panel1: TPanel;
     StartStop: TBitBtn;
     FromMHZ: TSpinEdit;
     TillMHZ: TSpinEdit;
@@ -21,10 +26,9 @@ type
     DrawMaxPower: TCheckBox;
     SavePicturesToFiles: TBitBtn;
     AutoAxis: TCheckBox;
-    Chart1: TChart;
-    Series2: TLineSeries;
-    Series1: TLineSeries;
-    WaterFall: TPaintBox;
+    LeftAxis: TCheckBox;
+    BottomAxis: TCheckBox;
+    Splitter1: TSplitter;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -39,12 +43,17 @@ type
     procedure WaterFallMouseLeave(Sender: TObject);
     procedure WaterFallMouseEnter(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure Chart1MouseEnter(Sender: TObject);
+    procedure Chart1MouseLeave(Sender: TObject);
+    procedure Splitter1Moved(Sender: TObject);
+    procedure FormResize(Sender: TObject);
   private
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
     procedure AddLineToWaterFall(Data: array of double; DataSize: integer);
     procedure DrawWF;
     procedure DrawWaterFallPicture;
+    procedure DrawSC;
     { Private declarations }
   public
     { Public declarations }
@@ -58,9 +67,14 @@ var
   AppDir: String;
 
   WFBitmap: TBitmap;
+
   WFCursor: Boolean = False;
   WFCursorX: Integer = -1;
   WFCursorY: Integer = -1;
+
+  SPCursor: Boolean = False;
+  SPCursorX: Integer = -1;
+  SPCursorY: Integer = -1;
 
 implementation
 
@@ -77,14 +91,17 @@ procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Ini := TIniFile.Create( ChangeFileExt(Application.ExeName, '.ini') );
   try
-    Ini.WriteInteger('App', 'FromMHZ',  FromMHZ.Value);
-    Ini.WriteInteger('App', 'TillMHZ',  TillMHZ.Value);
-    Ini.WriteBool   ('App', 'DrawMax',  DrawMaxPower.Checked);
-    Ini.WriteBool   ('App', 'AutoAxis', AutoAxis.Checked);
-    Ini.WriteInteger('App', 'StepSize', StepSize.ItemIndex);
-    Ini.WriteInteger('App', 'Gain',     Gain.ItemIndex);
-    Ini.WriteInteger('App', 'PPM',      PPM.Value);
-    Ini.WriteInteger('App', 'Dongle',   ChooseDongle.Value);
+    Ini.WriteInteger('App', 'FromMHZ',    FromMHZ.Value);
+    Ini.WriteInteger('App', 'TillMHZ',    TillMHZ.Value);
+    Ini.WriteBool   ('App', 'DrawMax',    DrawMaxPower.Checked);
+    Ini.WriteBool   ('App', 'AutoAxis',   AutoAxis.Checked);
+    Ini.WriteBool   ('App', 'LeftAxis',   LeftAxis.Checked);
+    Ini.WriteBool   ('App', 'BottomAxis', BottomAxis.Checked);
+    Ini.WriteInteger('App', 'StepSize',   StepSize.ItemIndex);
+    Ini.WriteInteger('App', 'Gain',       Gain.ItemIndex);
+    Ini.WriteInteger('App', 'PPM',        PPM.Value);
+    Ini.WriteInteger('App', 'Dongle',     ChooseDongle.Value);
+    Ini.WriteInteger('App', 'SplitterY',  Chart1.Height);
   finally
     Ini.Free;
   end;
@@ -98,21 +115,24 @@ begin
 
   Ini := TIniFile.Create( ChangeFileExt(Application.ExeName, '.ini') );
   try
-    FromMHZ.Value :=        Ini.ReadInteger('App', 'FromMHZ', 64);
-    TillMHZ.Value :=        Ini.ReadInteger('App', 'TillMHZ', 108);
+    FromMHZ.Value :=        Ini.ReadInteger('App', 'FromMHZ', 64000000);
+    TillMHZ.Value :=        Ini.ReadInteger('App', 'TillMHZ', 108000000);
     DrawMaxPower.Checked := Ini.ReadBool   ('App', 'DrawMax', False);
     AutoAxis.Checked :=     Ini.ReadBool   ('App', 'AutoAxis', False);
+    LeftAxis.Checked :=     Ini.ReadBool   ('App', 'LeftAxis', False);
+    BottomAxis.Checked :=   Ini.ReadBool   ('App', 'BottomAxis', False);
     StepSize.ItemIndex :=   Ini.ReadInteger('App', 'StepSize', 2);
     Gain.ItemIndex :=       Ini.ReadInteger('App', 'Gain', 0);
     PPM.Value :=            Ini.ReadInteger('App', 'PPM', 0);
     ChooseDongle.Value :=   Ini.ReadInteger('App', 'Dongle', 0);
+    Chart1.Height :=        Ini.ReadInteger('App', 'SplitterY', 250);
   finally
     Ini.Free;
   end;
 
   WFBitmap := TBitmap.Create;
   WFBitmap.PixelFormat := pf24bit;
-  WFBitmap.SetSize(1920, 100);
+  WFBitmap.SetSize(1920, WaterFall.Height);
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -120,16 +140,29 @@ begin
   WFBitmap.Free;
 end;
 
+procedure TForm1.FormResize(Sender: TObject);
+begin
+  if Form1.Height <= Chart1.Height + 100 then
+    if Form1.Height > 160 then
+      Chart1.Height := Form1.Height - 150;
+end;
+
 function rgb2(z, min_z, max_z: double): TColor;
 var
   g: Double;
 begin
+  try
     g := (z - min_z) / (max_z - min_z);
+  except
+    g := 255;
+  end;
     Result := RGB(Round(g*255), 50, 110); // RGB(Round(g*255), Round(g*255), 50);
 end;
 
 procedure TForm1.DrawWaterFallPicture;
 begin
+    WFBitmap.SetSize(1920, WaterFall.Height);
+
     WaterFall.Canvas.StretchDraw(
         WaterFall.Canvas.ClipRect,
         WFBitmap
@@ -145,11 +178,11 @@ begin
   TempFall := TBitmap.Create;
   try
     TempFall.PixelFormat := pf24bit;
-    TempFall.SetSize(DataSize, 1);
+    TempFall.SetSize(DataSize + 1, 1);
 
     // calculate min_z, max_z
     min_z := 0;
-    max_z := -256;
+    max_z := -120;
     for i := 0 to DataSize do begin
       if min_z > Data[i] then min_z := Data[i];
       if max_z < Data[i] then max_z := Data[i];
@@ -172,8 +205,9 @@ begin
         TempFall
     );
 
-    // draw waterfall to screen
+    // draw waterfall and spectrum to screen
     DrawWF;
+    DrawSC;
 
   finally
     TempFall.Free;
@@ -201,15 +235,34 @@ begin
   Log('Spectrum and waterfall saved');
 end;
 
+procedure TForm1.Splitter1Moved(Sender: TObject);
+begin
+  DrawWF;
+end;
+
+procedure TForm1.Chart1MouseEnter(Sender: TObject);
+begin
+  SPCursor := True;
+end;
+
+procedure TForm1.Chart1MouseLeave(Sender: TObject);
+begin
+  SPCursor := False;
+  Chart1.Repaint;
+end;
+
 procedure TForm1.Chart1MouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
   tmpX, tmpY: Double;
 begin
   Chart1.Series[0].GetCursorValues(tmpx, tmpy);
-  Chart1.Hint :=
-    'Signal: ' + Chart1.Series[0].GetVertAxis.LabelValue(tmpY) + ' dB' + #13#10
-    + 'Freq: ' + Chart1.Series[0].GetHorizAxis.LabelValue(tmpX) + ' Hz';
+  Chart1.Hint := Chart1.Series[0].GetHorizAxis.LabelValue(tmpX) + ' Hz' + #13#10
+    + Chart1.Series[0].GetVertAxis.LabelValue(tmpY) + ' dB';
+
+  SPCursorX := X;
+  SPCursorY := Y;
+  DrawSC;
 end;
 
 function ExecAndWait(const FileName,
@@ -247,7 +300,7 @@ var
   CommandLine, DataString, S, S2: String;
   SourceData, Data: TStringList;
   DataSize, DrawStep, DrawFreq, i: Integer;
-  Power, MaxPower: Array of double;
+  Power, MaxPower: Array of Double;
   SpectrumX, SpectrumStep: Double;
 begin
 // Flag to init MaxPower array
@@ -257,11 +310,11 @@ while Processing do begin
 
   Log('Scanning '
     + IntToStr(FromMHZ.Value) + '-'
-    + IntToStr(TillMHZ.Value) + ' MHz...');
+    + IntToStr(TillMHZ.Value) + ' Hz...');
 
   // Scan using rtl_power
-  CommandLine := '-f ' + IntToStr(FromMHZ.Value) + 'M:'
-                       + IntToStr(TillMHZ.Value) + 'M:'
+  CommandLine := '-f ' + IntToStr(FromMHZ.Value) + ':'
+                       + IntToStr(TillMHZ.Value) + ':'
                        + StepSize.Text;
   CommandLine := CommandLine + ' -g ' + Gain.Text;
   CommandLine := CommandLine + ' -p ' + IntToStr(PPM.Value);
@@ -271,7 +324,6 @@ while Processing do begin
     AppDir + 'rtl_power.exe',
     CommandLine + ' -1 -i 1s scan.csv',
     SW_HIDE
-    // SW_SHOWNORMAL
   );
 
   Data := TStringList.Create;
@@ -285,7 +337,7 @@ while Processing do begin
     SourceData.LoadFromFile('scan.csv');
     for S in SourceData do begin
       S2 := Copy(S, Pos(',', S)+1, Length(S)-Pos(',', S));
-      // cutting data before
+      // cutting unnecessary data before
       for i := 1 to 4 do
         S2 := Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2));
       DataString := DataString + Trim(Copy(S2, Pos(',', S2)+1, Length(S2)-Pos(',', S2))) + ', ';
@@ -302,32 +354,27 @@ while Processing do begin
 
     // Calculating size of data
     DataSize := Data.Count - 1;
-    SetLength(Power, DataSize);
+    SetLength(Power, DataSize + 1);
 
     // Init MaxPower[array]
-    SetLength(MaxPower, DataSize);
+    SetLength(MaxPower, DataSize + 1);
     if MaxPowerReset then begin
       MaxPowerReset := False;
-      for i := 0 to DataSize do MaxPower[i] := -256;
+      for i := 0 to DataSize do MaxPower[i] := -120.0;
     end;
 
     // Moving data to Power[array]
     for i := 0 to DataSize do begin
-      if (Data[i]) = '-1.#J' then Data[i] := '-1.00';           // fix for -1.#J rtl_power
-      try
-        Power[i] := StrToFloat( Trim(Data[i]) );                // populate power
-      except
-        // probably this will fix issue for reddit users :)
-        Power[i] := -1.0;
-      end;
-      if (MaxPower[i] < Power[i]) then MaxPower[i] := Power[i]; // populate max power
+      if (Data[i]) = '-1.#J' then Data[i] := '-1.00';            // fix for -1.#J rtl_power
+      Power[i] := StrToFloat( Trim(Data[i]) );                   // populate power
+      if (MaxPower[i] < Power[i]) then MaxPower[i] := Power[i];  // populate max power
     end;
 
     Log('Drawing chart...');
 
     // Calculate X axis
-    SpectrumStep := (((TillMHZ.Value * 1000000) - (FromMHZ.Value * 1000000)) / DataSize);
-    SpectrumX := FromMHZ.Value * 1000000;
+    SpectrumStep := (TillMHZ.Value  - FromMHZ.Value) / DataSize;
+    SpectrumX := FromMHZ.Value;
 
     // Draw to chart
     Chart1.Series[0].Clear;
@@ -355,6 +402,10 @@ while Processing do begin
       Chart1.LeftAxis.Minimum := -120;
       Chart1.LeftAxis.Maximum := 0;
     end;
+
+    // Chart axis visibility
+    Chart1.LeftAxis.Visible := LeftAxis.Checked;
+    Chart1.BottomAxis.Visible := BottomAxis.Checked;
 
     // Draw line to waterfall
     AddLineToWaterFall(Power, DataSize);
@@ -400,7 +451,7 @@ var
   Freq: Double;
 begin
   Freq := FromMHZ.Value + ( (TillMHZ.Value - FromMHZ.Value) / WaterFall.Width ) * X;
-  WaterFall.Hint := Format('%.3f MHz', [Freq]);
+  WaterFall.Hint := Format('%.3f MHz', [Freq/1000000]);
 
   WFCursorX := X;
   WFCursorY := Y;
@@ -418,7 +469,22 @@ begin
 
     WaterFall.Canvas.Font.Color := clLime;
     WaterFall.Canvas.Brush.Style := bsClear;
-    WaterFall.Canvas.TextOut(WFCursorX + 5, WFCursorY - 12, WaterFall.Hint);
+    WaterFall.Canvas.TextOut(WFCursorX + 3, WFCursorY - 12, WaterFall.Hint);
+  end;
+end;
+
+procedure TForm1.DrawSC;
+begin
+  Chart1.Repaint;
+
+  if SPCursor then begin
+    Chart1.Canvas.Pen.Color := clRed;
+    Chart1.Canvas.MoveTo(SPCursorX, 0);
+    Chart1.Canvas.LineTo(SPCursorX, Chart1.Height);
+
+    Chart1.Canvas.Font.Color := clBlue;
+    Chart1.Brush.Style := bsClear;
+    Chart1.Canvas.TextOut(SPCursorX + 3, SPCursorY - 16, Chart1.Hint);
   end;
 end;
 
