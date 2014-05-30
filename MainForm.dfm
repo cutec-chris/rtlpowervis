@@ -214,7 +214,7 @@ object Form1: TForm1
         '1M')
     end
     object Gain: TComboBox
-      Left = 315
+      Left = 320
       Top = 10
       Width = 47
       Height = 21
@@ -260,7 +260,7 @@ object Form1: TForm1
         '49.6')
     end
     object PPM: TSpinEdit
-      Left = 365
+      Left = 370
       Top = 10
       Width = 40
       Height = 22
@@ -276,7 +276,7 @@ object Form1: TForm1
       OnKeyPress = PressResetMaxPowerLevel
     end
     object ChooseDongle: TSpinEdit
-      Left = 407
+      Left = 412
       Top = 10
       Width = 30
       Height = 22
@@ -292,13 +292,13 @@ object Form1: TForm1
       OnKeyPress = PressResetMaxPowerLevel
     end
     object DrawMaxPower: TCheckBox
-      Left = 571
+      Left = 526
       Top = 12
-      Width = 39
+      Width = 68
       Height = 17
       Hint = 'Draw spectrum power maximums'
       ParentCustomHint = False
-      Caption = 'Max'
+      Caption = 'Maximums'
       ParentShowHint = False
       ShowHint = True
       TabOrder = 7
@@ -317,7 +317,7 @@ object Form1: TForm1
       OnClick = SavePicturesToFilesClick
     end
     object AutoAxis: TCheckBox
-      Left = 446
+      Left = 461
       Top = 12
       Width = 57
       Height = 17
@@ -328,37 +328,15 @@ object Form1: TForm1
       ShowHint = True
       TabOrder = 9
     end
-    object LeftAxis: TCheckBox
-      Left = 506
-      Top = 12
-      Width = 29
-      Height = 17
-      Hint = 'Show level axis'
-      Caption = 'dB'
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 10
-    end
-    object BottomAxis: TCheckBox
-      Left = 538
-      Top = 12
-      Width = 30
-      Height = 17
-      Hint = 'Show frequency axis'
-      Caption = 'Hz'
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 11
-    end
-    object PresetBtn: TBitBtn
+    object OptionsButton: TBitBtn
       Left = 612
       Top = 8
       Width = 75
       Height = 25
-      Hint = 'Load and save program presets'
-      Caption = 'Presets...'
-      TabOrder = 12
-      OnClick = PresetBtnClick
+      Hint = 'Advanced program options'
+      Caption = 'Options...'
+      TabOrder = 10
+      OnClick = OptionsButtonClick
     end
   end
   object PopupMenu1: TPopupMenu
@@ -371,6 +349,21 @@ object Form1: TForm1
     object Savepreset1: TMenuItem
       Caption = 'Save preset...'
       OnClick = Savepreset1Click
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object LeftAxis: TMenuItem
+      Caption = 'Show level axis (dB)'
+      OnClick = InvertMenuitem
+    end
+    object BottomAxis: TMenuItem
+      Caption = 'Show frequency axis (Hz)'
+      OnClick = InvertMenuitem
+    end
+    object LimitWaterFall: TMenuItem
+      Caption = 'Limit waterfall to screen'
+      OnClick = InvertMenuitem
     end
   end
   object OpenDialog1: TOpenDialog

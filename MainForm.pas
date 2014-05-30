@@ -27,15 +27,17 @@ type
     DrawMaxPower: TCheckBox;
     SavePicturesToFiles: TBitBtn;
     AutoAxis: TCheckBox;
-    LeftAxis: TCheckBox;
-    BottomAxis: TCheckBox;
     Splitter1: TSplitter;
-    PresetBtn: TBitBtn;
+    OptionsButton: TBitBtn;
     PopupMenu1: TPopupMenu;
     Loadpreset1: TMenuItem;
     Savepreset1: TMenuItem;
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
+    N1: TMenuItem;
+    LeftAxis: TMenuItem;
+    BottomAxis: TMenuItem;
+    LimitWaterFall: TMenuItem;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -54,9 +56,10 @@ type
     procedure Chart1MouseLeave(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    procedure PresetBtnClick(Sender: TObject);
+    procedure OptionsButtonClick(Sender: TObject);
     procedure Loadpreset1Click(Sender: TObject);
     procedure Savepreset1Click(Sender: TObject);
+    procedure InvertMenuitem(Sender: TObject);
   private
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
@@ -120,6 +123,7 @@ begin
     Ini.WriteBool   ('App', 'AutoAxis',   AutoAxis.Checked);
     Ini.WriteBool   ('App', 'LeftAxis',   LeftAxis.Checked);
     Ini.WriteBool   ('App', 'BottomAxis', BottomAxis.Checked);
+    Ini.WriteBool   ('App', 'LimitWF',    LimitWaterFall.Checked);
     Ini.WriteInteger('App', 'StepSize',   StepSize.ItemIndex);
     Ini.WriteInteger('App', 'Gain',       Gain.ItemIndex);
     Ini.WriteInteger('App', 'PPM',        PPM.Value);
@@ -147,6 +151,7 @@ begin
     AutoAxis.Checked :=     Ini.ReadBool   ('App', 'AutoAxis', False);
     LeftAxis.Checked :=     Ini.ReadBool   ('App', 'LeftAxis', False);
     BottomAxis.Checked :=   Ini.ReadBool   ('App', 'BottomAxis', False);
+    LimitWaterFall.Checked := Ini.ReadBool ('App', 'LimitWF', False);
     StepSize.ItemIndex :=   Ini.ReadInteger('App', 'StepSize', 2);
     Gain.ItemIndex :=       Ini.ReadInteger('App', 'Gain', 0);
     PPM.Value :=            Ini.ReadInteger('App', 'PPM', 0);
@@ -165,7 +170,11 @@ begin
 
   WFBitmap := TBitmap.Create;
   WFBitmap.PixelFormat := pf24bit;
-  WFBitmap.SetSize(1920, WaterFall.Height);
+
+  if LimitWaterFall.Checked then
+    WFBitmap.SetSize(WaterFall.Width, WaterFall.Height)
+  else
+    WFBitmap.SetSize(1920, 1080);
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -178,6 +187,11 @@ begin
   if Form1.Height <= Chart1.Height + 100 then
     if Form1.Height > 160 then
       Chart1.Height := Form1.Height - 150;
+end;
+
+procedure TForm1.InvertMenuitem(Sender: TObject);
+begin
+  (Sender as TMenuItem).Checked := not (Sender as TMenuItem).Checked;
 end;
 
 function rgb2(z, min_z, max_z: double): TColor;
@@ -194,12 +208,15 @@ end;
 
 procedure TForm1.DrawWaterFallPicture;
 begin
-    WFBitmap.SetSize(1920, WaterFall.Height);
+  if LimitWaterFall.Checked then
+    WFBitmap.SetSize(WaterFall.Width, WaterFall.Height)
+  else
+    WFBitmap.SetSize(1920, 1080);
 
-    WaterFall.Canvas.StretchDraw(
-        WaterFall.Canvas.ClipRect,
-        WFBitmap
-    );
+  WaterFall.Canvas.StretchDraw(
+      WaterFall.Canvas.ClipRect,
+      WFBitmap
+  );
 end;
 
 procedure TForm1.AddLineToWaterFall(Data: array of double; DataSize: integer);
@@ -473,7 +490,7 @@ while Processing do begin
 end;
 end;
 
-procedure TForm1.PresetBtnClick(Sender: TObject);
+procedure TForm1.OptionsButtonClick(Sender: TObject);
 begin
   PopupMenu1.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
 end;
