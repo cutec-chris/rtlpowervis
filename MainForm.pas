@@ -42,6 +42,8 @@ type
     N2: TMenuItem;
     Spectrumgraphcolor1: TMenuItem;
     Spectrummaxcolor1: TMenuItem;
+    DrawTimeMarker: TMenuItem;
+    TunerAGC: TCheckBox;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -66,6 +68,7 @@ type
     procedure InvertMenuitem(Sender: TObject);
     procedure Spectrumgraphcolor1Click(Sender: TObject);
     procedure Spectrummaxcolor1Click(Sender: TObject);
+    procedure TunerAGCClick(Sender: TObject);
   private
     procedure AddLineToWaterFall(DataSize: integer);
     procedure DrawSP;
@@ -88,6 +91,7 @@ var
   AppDir: String;
   Form1: TForm1;
   Ini: TIniFile;
+  ScanCounter: Int64 = 0;
   Processing: Boolean = False;
   MaxPowerReset: Boolean = False;
 
@@ -121,6 +125,14 @@ begin
     StartStop.Caption := 'START';
 end;
 
+procedure TForm1.TunerAGCClick(Sender: TObject);
+begin
+  if TunerAGC.Checked then
+    Gain.Enabled := False
+  else
+    Gain.Enabled := True;
+end;
+
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   SavePresetToFile( ChangeFileExt(Application.ExeName, '.ini') );
@@ -133,11 +145,13 @@ begin
   try
     Ini.WriteInteger('App', 'FromMHZ',    FromMHZ.Value);
     Ini.WriteInteger('App', 'TillMHZ',    TillMHZ.Value);
+    Ini.WriteBool   ('App', 'TunerAGC',   TunerAGC.Checked);
     Ini.WriteBool   ('App', 'DrawMax',    DrawMaxPower.Checked);
     Ini.WriteBool   ('App', 'AutoAxis',   AutoAxis.Checked);
     Ini.WriteBool   ('App', 'LeftAxis',   LeftAxis.Checked);
     Ini.WriteBool   ('App', 'BottomAxis', BottomAxis.Checked);
     Ini.WriteBool   ('App', 'LimitWF',    LimitWaterFall.Checked);
+    Ini.WriteBool   ('App', 'DrawTime',   DrawTimeMarker.Checked);
     Ini.WriteInteger('App', 'StepSize',   StepSize.ItemIndex);
     Ini.WriteInteger('App', 'Gain',       Gain.ItemIndex);
     Ini.WriteInteger('App', 'PPM',        PPM.Value);
@@ -163,11 +177,13 @@ begin
   try
     FromMHZ.Value :=        Ini.ReadInteger('App', 'FromMHZ', 64000000);
     TillMHZ.Value :=        Ini.ReadInteger('App', 'TillMHZ', 108000000);
+    TunerAGC.Checked :=     Ini.ReadBool   ('App', 'TunerAGC', False);
     DrawMaxPower.Checked := Ini.ReadBool   ('App', 'DrawMax', False);
     AutoAxis.Checked :=     Ini.ReadBool   ('App', 'AutoAxis', False);
-    LeftAxis.Checked :=     Ini.ReadBool   ('App', 'LeftAxis', False);
-    BottomAxis.Checked :=   Ini.ReadBool   ('App', 'BottomAxis', False);
+    LeftAxis.Checked :=     Ini.ReadBool   ('App', 'LeftAxis', True);
+    BottomAxis.Checked :=   Ini.ReadBool   ('App', 'BottomAxis', True);
     LimitWaterFall.Checked := Ini.ReadBool ('App', 'LimitWF', False);
+    DrawTimeMarker.Checked := Ini.ReadBool ('App', 'DrawTime', False);
     StepSize.ItemIndex :=   Ini.ReadInteger('App', 'StepSize', 2);
     Gain.ItemIndex :=       Ini.ReadInteger('App', 'Gain', 0);
     PPM.Value :=            Ini.ReadInteger('App', 'PPM', 0);
@@ -178,6 +194,9 @@ begin
   finally
     Ini.Free;
   end;
+
+  MaxPowerReset := True;
+  TunerAGCClick(Self);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -188,7 +207,6 @@ begin
 
   WFBitmap := TBitmap.Create;
   WFBitmap.PixelFormat := pf24bit;
-
   if LimitWaterFall.Checked then
     WFBitmap.SetSize(WaterFall.Width, WaterFall.Height)
   else
@@ -273,6 +291,14 @@ begin
         TempFall
     );
 
+    // draw time marker
+    if (DrawTimeMarker.Checked) then
+      if (ScanCounter mod 20 = 0) then begin
+        WFBitmap.Canvas.Font.Color := clGreen;
+        WFBitmap.Canvas.Brush.Style := bsClear;
+        WFBitmap.Canvas.TextOut(2, 1, TimeToStr(Now));
+      end;
+
     // draw waterfall and spectrum to screen
     DrawWF;
     DrawSP;
@@ -298,7 +324,8 @@ var
 begin
   Filename := IntToStr(FromMHZ.Value) + '-' + IntToStr(TillMHZ.Value) + '_' +
         StringReplace(TimeToStr(Now), ':', '', [rfReplaceAll]) + '_' +
-        StringReplace(DateToStr(Now), FormatSettings.DateSeparator, '', [rfReplaceAll]) + '.bmp';
+        StringReplace(DateToStr(Now),
+          FormatSettings.DateSeparator, '', [rfReplaceAll]) + '.bmp';
   Chart1.SaveToBitmapFile(AppDir + 'spectrum_' + Filename);
   WFBitmap.SaveToFile(AppDir + 'waterfall_' + Filename);
   Log('Spectrum and waterfall saved');
@@ -411,7 +438,7 @@ begin
     Chart1.Series[0].Clear;
     Chart1.Series[1].Clear;
 
-    SpectrumStep := (TillMHZ.Value  - FromMHZ.Value) / DataSize;
+    SpectrumStep := (TillMHZ.Value - FromMHZ.Value) / DataSize;
     SpectrumX := FromMHZ.Value;
 
     for i := 0 to DataSize do begin
@@ -468,7 +495,8 @@ begin
   CommandLine := '-f ' + IntToStr(FromMHZ.Value) + ':'
                        + IntToStr(TillMHZ.Value) + ':'
                        + StepSize.Text;
-  CommandLine := CommandLine + ' -g ' + Gain.Text;
+  if not TunerAGC.Checked then
+    CommandLine := CommandLine + ' -g ' + Gain.Text;
   CommandLine := CommandLine + ' -p ' + IntToStr(PPM.Value);
   CommandLine := CommandLine + ' -d ' + IntToStr(ChooseDongle.Value);
   CommandLine := CommandLine + ' -1 -i 1s scan.csv';
@@ -496,7 +524,7 @@ begin
   FormatSettings.DecimalSeparator := '.';
 
   for i := 0 to DataSize do begin
-    if (Data[i]) = '-1.#J' then Data[i] := '-1.00'; // fix -1.#J rtl_power
+    if Data[i] = '-1.#J' then Data[i] := '-1.00'; // fix -1.#J rtl_power
     Power[i] := StrToFloat( Trim(Data[i]) );        // populate power
     if (MaxPower[i] < Power[i]) then
       MaxPower[i] := Power[i];                      // populate max power
@@ -506,9 +534,10 @@ end;
 procedure TForm1.MainLoop;
 var
   Data: TStringList;
-  DataSize, i: Integer;
+  DataSize: Integer;
 begin
 while Processing do begin
+  Inc(ScanCounter);
   Log(Format('Scanning %d-%d Hz', [FromMHZ.Value, TillMHZ.Value]));
   ExecAndWait(AppDir + 'rtl_power.exe', PrepareCommandLine, SW_HIDE);
   Data := TStringList.Create;
@@ -516,9 +545,9 @@ while Processing do begin
     DataSize := LoadRtlPowerData(Data);
     InitPowerArrays(DataSize);
     ParseRtlPowerData(Data, DataSize);
+    AddLineToWaterFall(DataSize);
     ProcessChart(DataSize);
     ProcessVisualSettings;
-    AddLineToWaterFall(DataSize);
   finally
     Data.Free;
   end;
