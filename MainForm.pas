@@ -44,6 +44,7 @@ type
     Spectrummaxcolor1: TMenuItem;
     DrawTimeMarker: TMenuItem;
     TunerAGC: TCheckBox;
+    Waterfallcolor1: TMenuItem;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -69,6 +70,7 @@ type
     procedure Spectrumgraphcolor1Click(Sender: TObject);
     procedure Spectrummaxcolor1Click(Sender: TObject);
     procedure TunerAGCClick(Sender: TObject);
+    procedure Waterfallcolor1Click(Sender: TObject);
   private
     procedure AddLineToWaterFall(DataSize: integer);
     procedure DrawSP;
@@ -109,6 +111,7 @@ var
 
   LevelColor: TColor = clBlue;
   MaxColor: TColor = clRed;
+  WFColor: TColor = clGreen;
 
 implementation
 
@@ -159,6 +162,7 @@ begin
     Ini.WriteInteger('App', 'SplitterY',  Chart1.Height);
     Ini.WriteInteger('App', 'LevelColor', LevelColor);
     Ini.WriteInteger('App', 'MaxColor',   MaxColor);
+    Ini.WriteInteger('App', 'WFColor',    WFColor);
   finally
     Ini.Free;
   end;
@@ -191,6 +195,7 @@ begin
     Chart1.Height :=        Ini.ReadInteger('App', 'SplitterY', 250);
     LevelColor :=           Ini.ReadInteger('App', 'LevelColor', clBlue);
     MaxColor :=             Ini.ReadInteger('App', 'MaxColor', clRed);
+    WFColor :=              Ini.ReadInteger('App', 'WFColor', clRed);
   finally
     Ini.Free;
   end;
@@ -232,14 +237,18 @@ end;
 
 function rgb2(z, min_z, max_z: double): TColor;
 var
-  g: Double;
+  coeff: Double;
+  color: LongInt;
+  r, g, b: Byte;
 begin
   try
-    g := (z - min_z) / (max_z - min_z);
+    coeff := (z - min_z) / (max_z - min_z);
   except
-    g := 255;
+    coeff := 1;
   end;
-    Result := RGB(Round(g*255), 50, 110); // RGB(Round(g*255), Round(g*255), 50);
+  color := ColorToRGB(WFColor);
+  r := color; g := color shr 8; b := color shr 16;
+  Result := RGB(Round(coeff*r), Round(coeff*g), 110);
 end;
 
 procedure TForm1.DrawWaterFallPicture;
@@ -628,6 +637,12 @@ end;
 procedure TForm1.WaterFallPaint(Sender: TObject);
 begin
   DrawWF;  // on form resize etc
+end;
+
+procedure TForm1.Waterfallcolor1Click(Sender: TObject);
+begin
+  if ColorDialog1.Execute then
+    WFColor := ColorDialog1.Color;
 end;
 
 end.

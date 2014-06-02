@@ -69,7 +69,6 @@ object Form1: TForm1
     ParentShowHint = False
     ShowHint = True
     SimpleText = 'ready'
-    ExplicitWidth = 779
   end
   object Chart1: TChart
     Left = 0
@@ -103,7 +102,6 @@ object Form1: TForm1
     OnMouseEnter = Chart1MouseEnter
     OnMouseLeave = Chart1MouseLeave
     OnMouseMove = Chart1MouseMove
-    ExplicitWidth = 779
     DefaultCanvas = 'TGDIPlusCanvas'
     ColorPaletteIndex = 13
     object Series1: TLineSeries
@@ -140,7 +138,6 @@ object Form1: TForm1
     Height = 41
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 779
     object StartStop: TBitBtn
       Left = 3
       Top = 8
@@ -479,6 +476,10 @@ object Form1: TForm1
       Caption = 'Spectrum max color'
       Hint = 'Assign spectrum max power color'
       OnClick = Spectrummaxcolor1Click
+    end
+    object Waterfallcolor1: TMenuItem
+      Caption = 'Waterfall color'
+      OnClick = Waterfallcolor1Click
     end
   end
   object OpenDialog1: TOpenDialog
