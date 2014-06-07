@@ -45,6 +45,8 @@ type
     DrawTimeMarker: TMenuItem;
     TunerAGC: TCheckBox;
     Waterfallcolor1: TMenuItem;
+    N3: TMenuItem;
+    Showfreqmonitor1: TMenuItem;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -71,6 +73,8 @@ type
     procedure Spectrummaxcolor1Click(Sender: TObject);
     procedure TunerAGCClick(Sender: TObject);
     procedure Waterfallcolor1Click(Sender: TObject);
+    procedure Showfreqmonitor1Click(Sender: TObject);
+    procedure AutoAxisClick(Sender: TObject);
   private
     procedure AddLineToWaterFall(DataSize: integer);
     procedure DrawSP;
@@ -86,6 +90,7 @@ type
     procedure ProcessChart(var DataSize: integer);
     procedure ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
     procedure SavePresetToFile(F: String);
+    procedure UpdateFrequencies(var DataSize: integer);
   public
   end;
 
@@ -113,9 +118,13 @@ var
   MaxColor: TColor = clRed;
   WFColor: TColor = clGreen;
 
+  Frequencies: TStringList;
+
 implementation
 
 {$R *.dfm}
+
+uses FreqMonitor;
 
 procedure TForm1.StartStopClick(Sender: TObject);
 begin
@@ -168,6 +177,11 @@ begin
   end;
 end;
 
+procedure TForm1.Showfreqmonitor1Click(Sender: TObject);
+begin
+  Form2.Visible := not Form2.Visible;
+end;
+
 procedure TForm1.Loadpreset1Click(Sender: TObject);
 begin
   OpenDialog1.InitialDir := AppDir;
@@ -216,10 +230,15 @@ begin
     WFBitmap.SetSize(WaterFall.Width, WaterFall.Height)
   else
     WFBitmap.SetSize(1920, 1080);
+
+  Frequencies := TStringList.Create;
+  Frequencies.Sorted := True;
+  Frequencies.Duplicates := dupIgnore;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
+  Frequencies.Free;
   WFBitmap.Free;
 end;
 
@@ -307,11 +326,6 @@ begin
         WFBitmap.Canvas.Brush.Style := bsClear;
         WFBitmap.Canvas.TextOut(2, 1, TimeToStr(Now));
       end;
-
-    // draw waterfall and spectrum to screen
-    DrawWF;
-    DrawSP;
-
   finally
     TempFall.Free;
   end;
@@ -360,6 +374,11 @@ end;
 procedure TForm1.Splitter1Moved(Sender: TObject);
 begin
   DrawWF;
+end;
+
+procedure TForm1.AutoAxisClick(Sender: TObject);
+begin
+  ProcessVisualSettings;
 end;
 
 procedure TForm1.Chart1MouseEnter(Sender: TObject);
@@ -452,10 +471,7 @@ begin
 
     for i := 0 to DataSize do begin
       Chart1.Series[0].AddXY(SpectrumX, Power[i], '', LevelColor);
-
-      if DrawMaxPower.Checked then
-        Chart1.Series[1].AddXY(SpectrumX, MaxPower[i], '', MaxColor);
-
+      Chart1.Series[1].AddXY(SpectrumX, MaxPower[i], '', MaxColor);
       SpectrumX := SpectrumX + SpectrumStep;
     end;
 
@@ -525,6 +541,27 @@ begin
   end;
 end;
 
+procedure TForm1.UpdateFrequencies(var DataSize: integer);
+var
+  i: integer;
+  sum, middle: double;
+begin
+  if not Form2.Visible then Exit;
+
+  Exit;
+
+  sum := 0;
+  for i := 0 to High(Power) do begin
+    // Frequencies.Add( FloatToStr(Power[i]) );
+    sum := sum + power[i];
+  end;
+  middle := sum / datasize;
+  Frequencies.Add( FloatToStr(middle) );
+
+  Form2.FMListBox.Clear;
+  Form2.FMListBox.Items := Frequencies;
+end;
+
 procedure TForm1.ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
 var
   i: integer;
@@ -533,7 +570,7 @@ begin
   FormatSettings.DecimalSeparator := '.';
 
   for i := 0 to DataSize do begin
-    if Data[i] = '-1.#J' then Data[i] := '-1.00'; // fix -1.#J rtl_power
+    if Data[i] = '-1.#J' then Data[i] := '-1.00';   // fix -1.#J rtl_power
     Power[i] := StrToFloat( Trim(Data[i]) );        // populate power
     if (MaxPower[i] < Power[i]) then
       MaxPower[i] := Power[i];                      // populate max power
@@ -557,6 +594,9 @@ while Processing do begin
     AddLineToWaterFall(DataSize);
     ProcessChart(DataSize);
     ProcessVisualSettings;
+    UpdateFrequencies(DataSize);
+    DrawSP;
+    DrawWF;
   finally
     Data.Free;
   end;

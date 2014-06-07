@@ -303,6 +303,7 @@ object Form1: TForm1
       ParentShowHint = False
       ShowHint = True
       TabOrder = 7
+      OnClick = AutoAxisClick
     end
     object SavePicturesToFiles: TBitBtn
       Left = 718
@@ -370,6 +371,7 @@ object Form1: TForm1
       ParentShowHint = False
       ShowHint = True
       TabOrder = 9
+      OnClick = AutoAxisClick
     end
     object OptionsButton: TBitBtn
       Left = 84
@@ -480,6 +482,13 @@ object Form1: TForm1
     object Waterfallcolor1: TMenuItem
       Caption = 'Waterfall color'
       OnClick = Waterfallcolor1Click
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
+    object Showfreqmonitor1: TMenuItem
+      Caption = 'Show/hide freq monitor'
+      OnClick = Showfreqmonitor1Click
     end
   end
   object OpenDialog1: TOpenDialog
