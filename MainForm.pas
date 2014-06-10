@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Buttons,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Buttons, StrUtils,
   Vcl.ExtCtrls, Math, Vcl.Samples.Spin, IniFiles, VclTee.TeeGDIPlus, Character,
   VCLTee.TeEngine, VCLTee.TeeProcs, VCLTee.Chart, VCLTee.Series, VCLTee.BubbleCh,
   Vcl.Menus;
@@ -89,6 +89,7 @@ type
     procedure ProcessVisualSettings;
     procedure ProcessChart(var DataSize: integer);
     procedure ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
+    function  RoundFreq(var Freq: Double): Integer;
     procedure SavePresetToFile(F: String);
     procedure UpdateFrequencies(var DataSize: integer);
   public
@@ -102,7 +103,8 @@ var
   Processing: Boolean = False;
   MaxPowerReset: Boolean = False;
 
-  Power, MaxPower: Array of Double;
+  Freq, MaxPower, Power: Array of Double;
+  Peak: Array of Boolean;
 
   WFBitmap: TBitmap;
 
@@ -184,7 +186,6 @@ end;
 
 procedure TForm1.Loadpreset1Click(Sender: TObject);
 begin
-  OpenDialog1.InitialDir := AppDir;
   if OpenDialog1.Execute then
     LoadPresetFromFile(OpenDialog1.FileName);
 end;
@@ -234,6 +235,9 @@ begin
   Frequencies := TStringList.Create;
   Frequencies.Sorted := True;
   Frequencies.Duplicates := dupIgnore;
+
+  OpenDialog1.InitialDir := AppDir;
+  SaveDialog1.InitialDir := AppDir;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -254,7 +258,7 @@ begin
   (Sender as TMenuItem).Checked := not (Sender as TMenuItem).Checked;
 end;
 
-function rgb2(z, min_z, max_z: double): TColor;
+function CalcRGB(z, min_z, max_z: double): TColor;
 var
   coeff: Double;
   color: LongInt;
@@ -304,7 +308,7 @@ begin
 
     // draw pixels line
     for i := 0 to DataSize do
-      TempFall.Canvas.Pixels[i, 0] := rgb2(Power[i], min_z, max_z);
+      TempFall.Canvas.Pixels[i, 0] := CalcRGB(Power[i], min_z, max_z);
 
     // shift old waterfall image
     WFBitmap.Canvas.CopyRect(
@@ -356,7 +360,6 @@ end;
 
 procedure TForm1.Savepreset1Click(Sender: TObject);
 begin
-  SaveDialog1.InitialDir := AppDir;
   if SaveDialog1.Execute then
     SavePresetToFile(SaveDialog1.FileName);
 end;
@@ -458,6 +461,29 @@ begin
   Chart1.BottomAxis.Visible := BottomAxis.Checked;
 end;
 
+function TForm1.RoundFreq(var Freq: Double): Integer;
+var
+  mUnit: Char;
+  IntFreq, LoFreq, HiFreq, Size, Rounder: Int64;
+begin
+  mUnit := StepSize.Text[Length(StepSize.Text)];
+  Rounder := 1;
+  case mUnit of
+    'k': Rounder := StrToInt( LeftStr(StepSize.Text, Length(StepSize.Text)-1) ) * 1000;
+    'M': Rounder := StrToInt( LeftStr(StepSize.Text, Length(StepSize.Text)-1) ) * 1000000;
+  end;
+
+  IntFreq := Round(Freq);
+  Size    := IntFreq mod Rounder;
+  LoFreq  := IntFreq - Size;
+  HiFreq  := LoFreq + Rounder;
+
+  if (IntFreq - LoFreq) <= (HiFreq - IntFreq) then
+    Result := LoFreq
+  else
+    Result := HiFreq;
+end;
+
 procedure TForm1.ProcessChart(var DataSize: integer);
 var
   i: integer;
@@ -470,6 +496,7 @@ begin
     SpectrumX := FromMHZ.Value;
 
     for i := 0 to DataSize do begin
+      Freq[i] := SpectrumX;
       Chart1.Series[0].AddXY(SpectrumX, Power[i], '', LevelColor);
       Chart1.Series[1].AddXY(SpectrumX, MaxPower[i], '', MaxColor);
       SpectrumX := SpectrumX + SpectrumStep;
@@ -533,33 +560,57 @@ procedure TForm1.InitPowerArrays(var DataSize: integer);
 var
   i: integer;
 begin
-  SetLength(Power, DataSize + 1);
+  SetLength(Freq, DataSize + 1);
   SetLength(MaxPower, DataSize + 1);
+  SetLength(Power, DataSize + 1);
+  SetLength(Peak, DataSize + 1);
   if MaxPowerReset then begin
     MaxPowerReset := False;
-    for i := 0 to DataSize do MaxPower[i] := -120.0;
+    for i := 0 to DataSize do MaxPower[i] := -127.0;
   end;
+end;
+
+function CompareStringsAsIntegers(List: TStringList; Index1, Index2: Integer): Integer;
+begin
+  Result := StrToInt(List[Index1]) - StrToInt(List[Index2]);
 end;
 
 procedure TForm1.UpdateFrequencies(var DataSize: integer);
 var
-  i: integer;
-  sum, middle: double;
+  i, j, k: Integer;
+  Flag: Boolean;
+  min, max: Double;
 begin
   if not Form2.Visible then Exit;
 
-  Exit;
-
-  sum := 0;
-  for i := 0 to High(Power) do begin
-    // Frequencies.Add( FloatToStr(Power[i]) );
-    sum := sum + power[i];
+  for i := 0 to DataSize do begin
+    Flag := True;
+    min := 127;
+    max := -127;
+    for j := 0 to DataSize do begin
+      k := Round(i + j - DataSize/2);
+      if (k <> i) and (k >= 0) and (k < DataSize) then begin
+        if (Power[k] > Power[i]) then begin
+          Flag := False;
+          break;
+        end;
+        if (Power[k] = Power[i]) and (i < k) then begin
+          Flag := False;
+          break;
+        end;
+        if (Power[k] > max) then max := Power[k];
+        if (Power[k] < min) then min := Power[k];
+      end;
+    end;
+    Peak[i] := Flag and (max-min >= 15);
+    if (Peak[i] = True) then
+      Frequencies.Add( IntToStr( RoundFreq( Freq[i] ) ) );
   end;
-  middle := sum / datasize;
-  Frequencies.Add( FloatToStr(middle) );
 
-  Form2.FMListBox.Clear;
+  Frequencies.Sorted := False;
+  Frequencies.CustomSort(CompareStringsAsIntegers);
   Form2.FMListBox.Items := Frequencies;
+  Frequencies.Sorted := True;
 end;
 
 procedure TForm1.ParseRtlPowerData(var Data: TStringList; var DataSize: integer);

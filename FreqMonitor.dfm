@@ -18,12 +18,25 @@ object Form2: TForm2
     Top = 0
     Width = 199
     Height = 296
+    Hint = 'Double click = copy to clipboard'
     Align = alClient
     ItemHeight = 13
+    ParentShowHint = False
+    PopupMenu = FLPopupMenu
+    ShowHint = True
     TabOrder = 0
-    ExplicitLeft = 16
-    ExplicitTop = 24
-    ExplicitWidth = 121
-    ExplicitHeight = 97
+    OnDblClick = FMListBoxDblClick
+  end
+  object FLPopupMenu: TPopupMenu
+    Left = 24
+    Top = 248
+    object Clearlist1: TMenuItem
+      Caption = 'Clear list'
+      OnClick = Clearlist1Click
+    end
+    object Savelisttofile1: TMenuItem
+      Caption = 'Save list to file...'
+      OnClick = Savelisttofile1Click
+    end
   end
 end
