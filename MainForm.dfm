@@ -499,7 +499,7 @@ object Form1: TForm1
   end
   object SaveDialog1: TSaveDialog
     DefaultExt = 'ini'
-    Filter = 'rtl_panorama preset files|*.ini'
+    Filter = 'rtl_panorama preset files|*.ini|text files|*.txt'
     Left = 154
     Top = 352
   end

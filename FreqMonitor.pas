@@ -44,8 +44,11 @@ end;
 
 procedure TForm2.Savelisttofile1Click(Sender: TObject);
 begin
-  if Form1.OpenDialog1.Execute then
-    Frequencies.SaveToFile(Form1.OpenDialog1.FileName);
+  Form1.SaveDialog1.FileName := '';
+  Form1.SaveDialog1.FilterIndex := 2;
+  if Form1.SaveDialog1.Execute then
+    Frequencies.SaveToFile(Form1.SaveDialog1.FileName);
+  Form1.SaveDialog1.FilterIndex := 1;
 end;
 
 end.
