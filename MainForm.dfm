@@ -130,6 +130,22 @@ object Form1: TForm1
       YValues.Order = loNone
       Transparency = 77
     end
+    object Series3: TPointSeries
+      Marks.Visible = False
+      SeriesColor = clLime
+      ClickableLine = False
+      Pointer.Brush.Gradient.EndColor = clLime
+      Pointer.Gradient.EndColor = clLime
+      Pointer.HorizSize = 3
+      Pointer.InflateMargins = True
+      Pointer.Style = psCircle
+      Pointer.VertSize = 3
+      Pointer.Visible = True
+      XValues.Name = 'X'
+      XValues.Order = loAscending
+      YValues.Name = 'Y'
+      YValues.Order = loNone
+    end
   end
   object Panel1: TPanel
     Left = 0
@@ -464,6 +480,10 @@ object Form1: TForm1
     object DrawTimeMarker: TMenuItem
       Caption = 'Draw time marker'
       Hint = 'Draw time marker at the left side of waterfall'
+      OnClick = InvertMenuitem
+    end
+    object MarkPeaks: TMenuItem
+      Caption = 'Mark peaks'
       OnClick = InvertMenuitem
     end
     object N2: TMenuItem

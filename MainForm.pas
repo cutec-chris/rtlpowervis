@@ -47,6 +47,8 @@ type
     Waterfallcolor1: TMenuItem;
     N3: TMenuItem;
     Showfreqmonitor1: TMenuItem;
+    MarkPeaks: TMenuItem;
+    Series3: TPointSeries;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -77,17 +79,18 @@ type
     procedure AutoAxisClick(Sender: TObject);
   private
     procedure AddLineToWaterFall(DataSize: integer);
+    procedure CalculatePeaks(var DataSize: integer);
     procedure DrawSP;
     procedure DrawWaterFallPicture;
     procedure DrawWF;
-    procedure InitPowerArrays(var DataSize: integer);
+    procedure InitArrays(var DataSize: integer);
     procedure LoadPresetFromFile(F: String);
     function  LoadRtlPowerData(var Data: TStringList): integer;
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
     function  PrepareCommandLine: String;
     procedure ProcessVisualSettings;
-    procedure ProcessChart(var DataSize: integer);
+    procedure ProcessChart;
     procedure ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
     function  RoundFreq(var Freq: Double): Integer;
     procedure SavePresetToFile(F: String);
@@ -166,6 +169,7 @@ begin
     Ini.WriteBool   ('App', 'BottomAxis', BottomAxis.Checked);
     Ini.WriteBool   ('App', 'LimitWF',    LimitWaterFall.Checked);
     Ini.WriteBool   ('App', 'DrawTime',   DrawTimeMarker.Checked);
+    Ini.WriteBool   ('App', 'MarkPeaks',  MarkPeaks.Checked);
     Ini.WriteInteger('App', 'StepSize',   StepSize.ItemIndex);
     Ini.WriteInteger('App', 'Gain',       Gain.ItemIndex);
     Ini.WriteInteger('App', 'PPM',        PPM.Value);
@@ -203,6 +207,7 @@ begin
     BottomAxis.Checked :=   Ini.ReadBool   ('App', 'BottomAxis', True);
     LimitWaterFall.Checked := Ini.ReadBool ('App', 'LimitWF', False);
     DrawTimeMarker.Checked := Ini.ReadBool ('App', 'DrawTime', False);
+    MarkPeaks.Checked :=    Ini.ReadBool   ('App', 'MarkPeaks', False);
     StepSize.ItemIndex :=   Ini.ReadInteger('App', 'StepSize', 2);
     Gain.ItemIndex :=       Ini.ReadInteger('App', 'Gain', 0);
     PPM.Value :=            Ini.ReadInteger('App', 'PPM', 0);
@@ -456,6 +461,12 @@ begin
     Chart1.LeftAxis.Maximum := 0;
   end;
 
+  // Visibility of chart peaks
+  if MarkPeaks.Checked then
+    Chart1.Series[2].Visible := True
+  else
+    Chart1.Series[2].Visible := False;
+
   // Chart axis visibility
   Chart1.LeftAxis.Visible := LeftAxis.Checked;
   Chart1.BottomAxis.Visible := BottomAxis.Checked;
@@ -464,7 +475,7 @@ end;
 function TForm1.RoundFreq(var Freq: Double): Integer;
 var
   mUnit: Char;
-  IntFreq, LoFreq, HiFreq, Size, Rounder: Int64;
+  IntFreq, LoFreq, HiFreq, Offset, Rounder: Int64;
 begin
   mUnit := StepSize.Text[Length(StepSize.Text)];
   Rounder := 1;
@@ -474,8 +485,8 @@ begin
   end;
 
   IntFreq := Round(Freq);
-  Size    := IntFreq mod Rounder;
-  LoFreq  := IntFreq - Size;
+  Offset  := IntFreq mod Rounder;
+  LoFreq  := IntFreq - Offset;
   HiFreq  := LoFreq + Rounder;
 
   if (IntFreq - LoFreq) <= (HiFreq - IntFreq) then
@@ -484,25 +495,19 @@ begin
     Result := HiFreq;
 end;
 
-procedure TForm1.ProcessChart(var DataSize: integer);
+procedure TForm1.ProcessChart;
 var
   i: integer;
-  SpectrumX, SpectrumStep: Double;
 begin
     Chart1.Series[0].Clear;
     Chart1.Series[1].Clear;
-
-    SpectrumStep := (TillMHZ.Value - FromMHZ.Value) / DataSize;
-    SpectrumX := FromMHZ.Value;
-
-    for i := 0 to DataSize do begin
-      Freq[i] := SpectrumX;
-      Chart1.Series[0].AddXY(SpectrumX, Power[i], '', LevelColor);
-      Chart1.Series[1].AddXY(SpectrumX, MaxPower[i], '', MaxColor);
-      SpectrumX := SpectrumX + SpectrumStep;
+    Chart1.Series[2].Clear;
+    for i := 0 to High(Power) do begin
+      Chart1.Series[0].AddXY(Freq[i], Power[i], '', LevelColor);
+      Chart1.Series[1].AddXY(Freq[i], MaxPower[i], '', MaxColor);
+      if Peak[i] then
+        Chart1.Series[2].AddXY(Freq[i], Power[i], '', clGreen);
     end;
-
-    Log('', Format('Step: %.3f Hz', [SpectrumStep]), 'FFT bins: ' + IntToStr(DataSize));
 end;
 
 function TForm1.LoadRtlPowerData(var Data: TStringList): integer;
@@ -556,7 +561,7 @@ begin
   Result := CommandLine;
 end;
 
-procedure TForm1.InitPowerArrays(var DataSize: integer);
+procedure TForm1.InitArrays(var DataSize: integer);
 var
   i: integer;
 begin
@@ -575,15 +580,19 @@ begin
   Result := StrToInt(List[Index1]) - StrToInt(List[Index2]);
 end;
 
-procedure TForm1.UpdateFrequencies(var DataSize: integer);
+procedure TForm1.CalculatePeaks;
 var
   i, j, k: Integer;
   Flag: Boolean;
   min, max: Double;
+  SpectrumX, SpectrumStep: Double;
 begin
-  if not Form2.Visible then Exit;
+  SpectrumX    := FromMHZ.Value;
+  SpectrumStep := (TillMHZ.Value - FromMHZ.Value) / DataSize;
 
   for i := 0 to DataSize do begin
+    Freq[i] := SpectrumX;
+
     Flag := True;
     min := 127;
     max := -127;
@@ -603,10 +612,17 @@ begin
       end;
     end;
     Peak[i] := Flag and (max-min >= 15);
-    if (Peak[i] = True) then
-      Frequencies.Add( IntToStr( RoundFreq( Freq[i] ) ) );
+    if (Peak[i]) then Frequencies.Add( IntToStr( RoundFreq( Freq[i] ) ) );
+
+    SpectrumX := SpectrumX + SpectrumStep;
   end;
 
+  Log('', Format('Step: %.3f Hz', [SpectrumStep]), 'FFT bins: ' + IntToStr(DataSize));
+end;
+
+procedure TForm1.UpdateFrequencies(var DataSize: integer);
+begin
+  if not Form2.Visible then Exit;
   Frequencies.Sorted := False;
   Frequencies.CustomSort(CompareStringsAsIntegers);
   Form2.FMListBox.Items := Frequencies;
@@ -640,10 +656,11 @@ while Processing do begin
   Data := TStringList.Create;
   try
     DataSize := LoadRtlPowerData(Data);
-    InitPowerArrays(DataSize);
+    InitArrays(DataSize);
     ParseRtlPowerData(Data, DataSize);
     AddLineToWaterFall(DataSize);
-    ProcessChart(DataSize);
+    CalculatePeaks(DataSize);
+    ProcessChart;
     ProcessVisualSettings;
     UpdateFrequencies(DataSize);
     DrawSP;
