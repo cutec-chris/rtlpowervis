@@ -582,11 +582,12 @@ end;
 
 procedure TForm1.CalculatePeaks;
 var
-  i, j, k: Integer;
+  i, j, k, FrameSize: Integer;
   Flag: Boolean;
-  min, max: Double;
-  SpectrumX, SpectrumStep: Double;
+  min, max, SpectrumX, SpectrumStep: Double;
 begin
+  FrameSize := 10;
+
   SpectrumX    := FromMHZ.Value;
   SpectrumStep := (TillMHZ.Value - FromMHZ.Value) / DataSize;
 
@@ -596,8 +597,8 @@ begin
     Flag := True;
     min := 127;
     max := -127;
-    for j := 0 to DataSize do begin
-      k := Round(i + j - DataSize/2);
+    for j := 0 to FrameSize do begin
+      k := Round(i + j - FrameSize / 2);
       if (k <> i) and (k >= 0) and (k < DataSize) then begin
         if (Power[k] > Power[i]) then begin
           Flag := False;
@@ -611,7 +612,7 @@ begin
         if (Power[k] < min) then min := Power[k];
       end;
     end;
-    Peak[i] := Flag and (max-min >= 15);
+    Peak[i] := Flag and (max-min >= 5);
     if (Peak[i]) then Frequencies.Add( IntToStr( RoundFreq( Freq[i] ) ) );
 
     SpectrumX := SpectrumX + SpectrumStep;
@@ -622,6 +623,7 @@ end;
 
 procedure TForm1.UpdateFrequencies(var DataSize: integer);
 begin
+  if Frequencies.Count > 25000 then Frequencies.Clear;
   if not Form2.Visible then Exit;
   Frequencies.Sorted := False;
   Frequencies.CustomSort(CompareStringsAsIntegers);
