@@ -78,8 +78,8 @@ type
     procedure Showfreqmonitor1Click(Sender: TObject);
     procedure AutoAxisClick(Sender: TObject);
   private
-    procedure AddLineToWaterFall(DataSize: integer);
-    procedure CalculatePeaks(var DataSize: integer);
+    procedure AddLineToWaterFall;
+    procedure CalculatePeaks;
     procedure DrawSP;
     procedure DrawWaterFallPicture;
     procedure DrawWF;
@@ -94,7 +94,7 @@ type
     procedure ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
     function  RoundFreq(var Freq: Double): Integer;
     procedure SavePresetToFile(F: String);
-    procedure UpdateFrequencies(var DataSize: integer);
+    procedure UpdateFrequencies;
   public
   end;
 
@@ -292,7 +292,7 @@ begin
   );
 end;
 
-procedure TForm1.AddLineToWaterFall(DataSize: integer);
+procedure TForm1.AddLineToWaterFall;
 var
   i: integer;
   TempFall: TBitmap;
@@ -301,18 +301,18 @@ begin
   TempFall := TBitmap.Create;
   try
     TempFall.PixelFormat := pf24bit;
-    TempFall.SetSize(DataSize + 1, 1);
+    TempFall.SetSize(High(Power) + 1, 1);
 
     // calculate min_z, max_z
     min_z := 0;
     max_z := -120;
-    for i := 0 to DataSize do begin
+    for i := 0 to High(Power) do begin
       if min_z > Power[i] then min_z := Power[i];
       if max_z < Power[i] then max_z := Power[i];
     end;
 
     // draw pixels line
-    for i := 0 to DataSize do
+    for i := 0 to High(Power) do
       TempFall.Canvas.Pixels[i, 0] := CalcRGB(Power[i], min_z, max_z);
 
     // shift old waterfall image
@@ -499,15 +499,15 @@ procedure TForm1.ProcessChart;
 var
   i: integer;
 begin
-    Chart1.Series[0].Clear;
-    Chart1.Series[1].Clear;
-    Chart1.Series[2].Clear;
-    for i := 0 to High(Power) do begin
-      Chart1.Series[0].AddXY(Freq[i], Power[i], '', LevelColor);
-      Chart1.Series[1].AddXY(Freq[i], MaxPower[i], '', MaxColor);
-      if Peak[i] then
-        Chart1.Series[2].AddXY(Freq[i], Power[i], '', clGreen);
-    end;
+  Chart1.Series[0].Clear;
+  Chart1.Series[1].Clear;
+  Chart1.Series[2].Clear;
+  for i := 0 to High(Power) do begin
+    Chart1.Series[0].AddXY(Freq[i], Power[i], '', LevelColor);
+    Chart1.Series[1].AddXY(Freq[i], MaxPower[i], '', MaxColor);
+    if Peak[i] then
+      Chart1.Series[2].AddXY(Freq[i], Power[i], '', clGreen);
+  end;
 end;
 
 function TForm1.LoadRtlPowerData(var Data: TStringList): integer;
@@ -589,9 +589,9 @@ begin
   FrameSize := 10;
 
   SpectrumX    := FromMHZ.Value;
-  SpectrumStep := (TillMHZ.Value - FromMHZ.Value) / DataSize;
+  SpectrumStep := (TillMHZ.Value - FromMHZ.Value) / High(Power);
 
-  for i := 0 to DataSize do begin
+  for i := 0 to High(Power) do begin
     Freq[i] := SpectrumX;
 
     Flag := True;
@@ -599,7 +599,7 @@ begin
     max := -127;
     for j := 0 to FrameSize do begin
       k := Round(i + j - FrameSize / 2);
-      if (k <> i) and (k >= 0) and (k < DataSize) then begin
+      if (k <> i) and (k >= 0) and (k < High(Power)) then begin
         if (Power[k] > Power[i]) then begin
           Flag := False;
           break;
@@ -618,10 +618,10 @@ begin
     SpectrumX := SpectrumX + SpectrumStep;
   end;
 
-  Log('', Format('Step: %.3f Hz', [SpectrumStep]), 'FFT bins: ' + IntToStr(DataSize));
+  Log('', Format('Step: %.3f Hz', [SpectrumStep]), 'FFT bins: ' + IntToStr(High(Power)));
 end;
 
-procedure TForm1.UpdateFrequencies(var DataSize: integer);
+procedure TForm1.UpdateFrequencies;
 begin
   if Frequencies.Count > 25000 then Frequencies.Clear;
   if not Form2.Visible then Exit;
@@ -660,11 +660,11 @@ while Processing do begin
     DataSize := LoadRtlPowerData(Data);
     InitArrays(DataSize);
     ParseRtlPowerData(Data, DataSize);
-    AddLineToWaterFall(DataSize);
-    CalculatePeaks(DataSize);
+    AddLineToWaterFall;
+    CalculatePeaks;
     ProcessChart;
     ProcessVisualSettings;
-    UpdateFrequencies(DataSize);
+    UpdateFrequencies;
     DrawSP;
     DrawWF;
   finally

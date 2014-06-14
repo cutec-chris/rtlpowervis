@@ -30,6 +30,11 @@ uses MainForm;
 
 {$R *.dfm}
 
+function CompareStringsAsIntegers(List: TStringList; Index1, Index2: Integer): Integer;
+begin
+  Result := StrToInt(List[Index1]) - StrToInt(List[Index2]);
+end;
+
 procedure TForm2.Clearlist1Click(Sender: TObject);
 begin
   Frequencies.Clear;
@@ -46,8 +51,12 @@ procedure TForm2.Savelisttofile1Click(Sender: TObject);
 begin
   Form1.SaveDialog1.FileName := '';
   Form1.SaveDialog1.FilterIndex := 2;
-  if Form1.SaveDialog1.Execute then
+  if Form1.SaveDialog1.Execute then begin
+    Frequencies.Sorted := False;
+    Frequencies.CustomSort(CompareStringsAsIntegers);
     Frequencies.SaveToFile(Form1.SaveDialog1.FileName);
+    Frequencies.Sorted := True;
+  end;
   Form1.SaveDialog1.FilterIndex := 1;
 end;
 
