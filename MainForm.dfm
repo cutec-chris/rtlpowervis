@@ -231,7 +231,7 @@ object Form1: TForm1
         '1M')
     end
     object Gain: TComboBox
-      Left = 423
+      Left = 437
       Top = 10
       Width = 47
       Height = 21
@@ -277,7 +277,7 @@ object Form1: TForm1
         '49.6')
     end
     object PPM: TSpinEdit
-      Left = 473
+      Left = 487
       Top = 10
       Width = 40
       Height = 22
@@ -293,7 +293,7 @@ object Form1: TForm1
       OnKeyPress = PressResetMaxPowerLevel
     end
     object ChooseDongle: TSpinEdit
-      Left = 515
+      Left = 529
       Top = 10
       Width = 30
       Height = 22
@@ -434,7 +434,7 @@ object Form1: TForm1
       OnClick = OptionsButtonClick
     end
     object TunerAGC: TCheckBox
-      Left = 378
+      Left = 395
       Top = 12
       Width = 41
       Height = 17
@@ -442,6 +442,15 @@ object Form1: TForm1
       Caption = 'AGC'
       TabOrder = 11
       OnClick = TunerAGCClick
+    end
+    object DirectSampling: TCheckBox
+      Left = 356
+      Top = 12
+      Width = 33
+      Height = 17
+      Hint = 'Use direct sampling instead of quadrature one'
+      Caption = 'DS'
+      TabOrder = 12
     end
   end
   object PopupMenu1: TPopupMenu

@@ -49,6 +49,7 @@ type
     Showfreqmonitor1: TMenuItem;
     MarkPeaks: TMenuItem;
     Series3: TPointSeries;
+    DirectSampling: TCheckBox;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -170,6 +171,7 @@ begin
     Ini.WriteBool   ('App', 'LimitWF',    LimitWaterFall.Checked);
     Ini.WriteBool   ('App', 'DrawTime',   DrawTimeMarker.Checked);
     Ini.WriteBool   ('App', 'MarkPeaks',  MarkPeaks.Checked);
+    Ini.WriteBool   ('App', 'DSampling',  DirectSampling.Checked);
     Ini.WriteInteger('App', 'StepSize',   StepSize.ItemIndex);
     Ini.WriteInteger('App', 'Gain',       Gain.ItemIndex);
     Ini.WriteInteger('App', 'PPM',        PPM.Value);
@@ -208,6 +210,7 @@ begin
     LimitWaterFall.Checked := Ini.ReadBool ('App', 'LimitWF', False);
     DrawTimeMarker.Checked := Ini.ReadBool ('App', 'DrawTime', False);
     MarkPeaks.Checked :=    Ini.ReadBool   ('App', 'MarkPeaks', False);
+    DirectSampling.Checked := Ini.ReadBool ('App', 'DSampling', False);
     StepSize.ItemIndex :=   Ini.ReadInteger('App', 'StepSize', 2);
     Gain.ItemIndex :=       Ini.ReadInteger('App', 'Gain', 0);
     PPM.Value :=            Ini.ReadInteger('App', 'PPM', 0);
@@ -554,6 +557,8 @@ begin
                        + StepSize.Text;
   if not TunerAGC.Checked then
     CommandLine := CommandLine + ' -g ' + Gain.Text;
+  if DirectSampling.Checked then
+    CommandLine := CommandLine + ' -D';
   CommandLine := CommandLine + ' -p ' + IntToStr(PPM.Value);
   CommandLine := CommandLine + ' -d ' + IntToStr(ChooseDongle.Value);
   CommandLine := CommandLine + ' -1 -i 1s scan.csv';
