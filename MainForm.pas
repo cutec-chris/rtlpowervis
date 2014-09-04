@@ -188,7 +188,7 @@ begin
     Ini.WriteBool   ('App', 'MarkPeaks',  MarkPeaks.Checked);
     Ini.WriteBool   ('App', 'DSampling',  DirectSampling.Checked);
     Ini.WriteBool   ('App', 'EPeakHold',  EnablePeakHold.Checked);
-    Ini.WriteInteger('App', 'StepSize',   StepSize.ItemIndex);
+    Ini.WriteString ('App', 'StepSizeT',  StepSize.Text);
     Ini.WriteInteger('App', 'Gain',       Gain.ItemIndex);
     Ini.WriteInteger('App', 'PPM',        PPM.Value);
     Ini.WriteInteger('App', 'Dongle',     ChooseDongle.Value);
@@ -240,7 +240,7 @@ begin
     MarkPeaks.Checked :=    Ini.ReadBool   ('App', 'MarkPeaks', False);
     DirectSampling.Checked := Ini.ReadBool ('App', 'DSampling', False);
     EnablePeakHold.Checked := Ini.ReadBool ('App', 'EPeakHold', False);
-    StepSize.ItemIndex :=   Ini.ReadInteger('App', 'StepSize', 2);
+    StepSize.Text :=        Ini.ReadString ('App', 'StepSizeT', '100k');
     Gain.ItemIndex :=       Ini.ReadInteger('App', 'Gain', 0);
     PPM.Value :=            Ini.ReadInteger('App', 'PPM', 0);
     ChooseDongle.Value :=   Ini.ReadInteger('App', 'Dongle', 0);
@@ -521,11 +521,16 @@ var
   mUnit: Char;
   IntFreq, LoFreq, HiFreq, Offset, Rounder: Int64;
 begin
+  if Length(StepSize.Text) < 1 then begin
+    Result := 0;
+    Exit;
+  end;
+
   mUnit := StepSize.Text[Length(StepSize.Text)];
   Rounder := 1;
   case mUnit of
-    'k': Rounder := StrToInt( LeftStr(StepSize.Text, Length(StepSize.Text)-1) ) * 1000;
-    'M': Rounder := StrToInt( LeftStr(StepSize.Text, Length(StepSize.Text)-1) ) * 1000000;
+    'k', 'K': Rounder := StrToInt( LeftStr(StepSize.Text, Length(StepSize.Text)-1) ) * 1000;
+    'm', 'M': Rounder := StrToInt( LeftStr(StepSize.Text, Length(StepSize.Text)-1) ) * 1000000;
   end;
 
   IntFreq := Round(Freq);
@@ -746,6 +751,7 @@ end;
 
 procedure TForm1.PressResetMaxPowerLevel(Sender: TObject; var Key: Char);
 begin
+  if not (Key in ['0'..'9', 'k', 'm', 'K', 'M', #8]) then Key := #0;
   MaxPowerReset := True;
 end;
 

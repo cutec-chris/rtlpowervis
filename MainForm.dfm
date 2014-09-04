@@ -213,7 +213,6 @@ object Form1: TForm1
       Height = 21
       Hint = 'Scanning step size'
       ParentCustomHint = False
-      Style = csDropDownList
       ItemIndex = 2
       ParentShowHint = False
       ShowHint = True
