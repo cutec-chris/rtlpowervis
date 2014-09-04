@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>1899.12.30 00:00:00.000.140,=D:\Delphi\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.057,D:\Delphi\rtl-pan\rtlpan.dproj=D:\Delphi\Project1.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.415,D:\Delphi\rtl-pan\MainForm.pas=D:\Delphi\Unit1.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.171,=D:\Delphi\rtl-pan\Unit2.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.514,D:\Delphi\rtl-pan\Unit2.pas=D:\Delphi\rtl-pan\FreqMonitor.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.415,D:\Delphi\Unit1.pas=D:\Delphi\rtl-pan\MainForm.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.057,D:\Delphi\Project1.dproj=D:\Delphi\rtl-pan\rtlpan.dproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.514,D:\Delphi\rtl-pan\Unit2.dfm=D:\Delphi\rtl-pan\FreqMonitor.dfm</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.415,D:\Delphi\Unit1.dfm=D:\Delphi\rtl-pan\MainForm.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.514,D:\Delphi\rtl-pan\FreqMonitor.pas=D:\Delphi\rtl-pan\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.415,D:\Delphi\rtl-pan\MainForm.dfm=D:\Delphi\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.514,D:\Delphi\rtl-pan\FreqMonitor.dfm=D:\Delphi\rtl-pan\Unit2.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.140,=D:\Delphi\Unit1.pas</Transaction>
   </Transactions>
 </BorlandProject>

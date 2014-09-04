@@ -29,7 +29,7 @@ object Form1: TForm1
     Color = clBtnFace
     ParentColor = False
     ParentShowHint = False
-    ShowHint = False
+    ShowHint = True
     OnMouseEnter = WaterFallMouseEnter
     OnMouseLeave = WaterFallMouseLeave
     OnMouseMove = WaterFallMouseMove
@@ -97,7 +97,7 @@ object Form1: TForm1
     Zoom.Pen.Mode = pmNotXor
     Align = alTop
     ParentShowHint = False
-    ShowHint = False
+    ShowHint = True
     TabOrder = 1
     OnMouseEnter = Chart1MouseEnter
     OnMouseLeave = Chart1MouseLeave
