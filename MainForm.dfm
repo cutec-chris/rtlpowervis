@@ -231,7 +231,7 @@ object Form1: TForm1
         '1M')
     end
     object Gain: TComboBox
-      Left = 437
+      Left = 424
       Top = 10
       Width = 47
       Height = 21
@@ -277,7 +277,7 @@ object Form1: TForm1
         '49.6')
     end
     object PPM: TSpinEdit
-      Left = 487
+      Left = 474
       Top = 10
       Width = 40
       Height = 22
@@ -293,7 +293,7 @@ object Form1: TForm1
       OnKeyPress = PressResetMaxPowerLevel
     end
     object ChooseDongle: TSpinEdit
-      Left = 529
+      Left = 516
       Top = 10
       Width = 30
       Height = 22
@@ -434,7 +434,7 @@ object Form1: TForm1
       OnClick = OptionsButtonClick
     end
     object TunerAGC: TCheckBox
-      Left = 395
+      Left = 382
       Top = 12
       Width = 41
       Height = 17
@@ -442,15 +442,6 @@ object Form1: TForm1
       Caption = 'AGC'
       TabOrder = 11
       OnClick = TunerAGCClick
-    end
-    object DirectSampling: TCheckBox
-      Left = 356
-      Top = 12
-      Width = 33
-      Height = 17
-      Hint = 'Use direct sampling instead of quadrature one'
-      Caption = 'DS'
-      TabOrder = 12
     end
   end
   object PopupMenu1: TPopupMenu
@@ -469,48 +460,121 @@ object Form1: TForm1
     object N1: TMenuItem
       Caption = '-'
     end
-    object LeftAxis: TMenuItem
-      Caption = 'Show level axis (dB)'
-      Hint = 'Show left spectrum axis'
-      OnClick = InvertMenuitem
+    object Radio2: TMenuItem
+      Caption = 'Rtl_power options...'
+      object Cropfactor1: TMenuItem
+        Caption = 'Crop percent...'
+        object Crop0: TMenuItem
+          Caption = '0%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop10: TMenuItem
+          Caption = '10%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop20: TMenuItem
+          Caption = '20%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop30: TMenuItem
+          Caption = '30%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop40: TMenuItem
+          Caption = '40%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop50: TMenuItem
+          Caption = '50%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop60: TMenuItem
+          Caption = '60%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop70: TMenuItem
+          Caption = '70%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop80: TMenuItem
+          Caption = '80%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop90: TMenuItem
+          Caption = '90%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+        object Crop100: TMenuItem
+          Caption = '100%'
+          RadioItem = True
+          OnClick = InvertMenuitem
+        end
+      end
+      object DirectSampling: TMenuItem
+        Caption = 'Direct sampling'
+        Hint = 'Use direct sampling instead of quadrature one'
+        OnClick = InvertMenuitem
+      end
+      object Enablepeakhold: TMenuItem
+        Caption = 'Enable peak hold'
+        OnClick = InvertMenuitem
+      end
     end
-    object BottomAxis: TMenuItem
-      Caption = 'Show frequency axis (Hz)'
-      Hint = 'Show bottom spectrum axis'
-      OnClick = InvertMenuitem
+    object Colors1: TMenuItem
+      Caption = 'Set colors...'
+      object Spectrumgraphcolor1: TMenuItem
+        Caption = 'Spectrum graph color...'
+        Hint = 'Assign spectrum power color'
+        OnClick = Spectrumgraphcolor1Click
+      end
+      object Spectrummaxcolor1: TMenuItem
+        Caption = 'Spectrum max color...'
+        Hint = 'Assign spectrum max power color'
+        OnClick = Spectrummaxcolor1Click
+      end
+      object Waterfallcolor1: TMenuItem
+        Caption = 'Waterfall color...'
+        OnClick = Waterfallcolor1Click
+      end
     end
-    object LimitWaterFall: TMenuItem
-      Caption = 'Limit waterfall to screen size'
-      Hint = 
-        'Enable this option to limit waterfall image resolution by its re' +
-        'al screen size (otherwise 1920*1080)'
-      OnClick = InvertMenuitem
-    end
-    object DrawTimeMarker: TMenuItem
-      Caption = 'Draw time marker'
-      Hint = 'Draw time marker at the left side of waterfall'
-      OnClick = InvertMenuitem
-    end
-    object MarkPeaks: TMenuItem
-      Caption = 'Mark peaks'
-      OnClick = InvertMenuitem
-    end
-    object N2: TMenuItem
-      Caption = '-'
-    end
-    object Spectrumgraphcolor1: TMenuItem
-      Caption = 'Spectrum graph color'
-      Hint = 'Assign spectrum power color'
-      OnClick = Spectrumgraphcolor1Click
-    end
-    object Spectrummaxcolor1: TMenuItem
-      Caption = 'Spectrum max color'
-      Hint = 'Assign spectrum max power color'
-      OnClick = Spectrummaxcolor1Click
-    end
-    object Waterfallcolor1: TMenuItem
-      Caption = 'Waterfall color'
-      OnClick = Waterfallcolor1Click
+    object Radio1: TMenuItem
+      Caption = 'Visual settings...'
+      object LeftAxis: TMenuItem
+        Caption = 'Show level axis (dB)'
+        Hint = 'Show left spectrum axis'
+        OnClick = InvertMenuitem
+      end
+      object BottomAxis: TMenuItem
+        Caption = 'Show frequency axis (Hz)'
+        Hint = 'Show bottom spectrum axis'
+        OnClick = InvertMenuitem
+      end
+      object LimitWaterFall: TMenuItem
+        Caption = 'Limit waterfall to screen size'
+        Hint = 
+          'Enable this option to limit waterfall image resolution by its re' +
+          'al screen size (otherwise 1920*1080)'
+        OnClick = InvertMenuitem
+      end
+      object DrawTimeMarker: TMenuItem
+        Caption = 'Draw time marker'
+        Hint = 'Draw time marker at the left side of waterfall'
+        OnClick = InvertMenuitem
+      end
+      object MarkPeaks: TMenuItem
+        Caption = 'Mark peaks'
+        OnClick = InvertMenuitem
+      end
     end
     object N3: TMenuItem
       Caption = '-'

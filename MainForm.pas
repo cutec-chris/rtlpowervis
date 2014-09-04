@@ -39,7 +39,6 @@ type
     BottomAxis: TMenuItem;
     LimitWaterFall: TMenuItem;
     ColorDialog1: TColorDialog;
-    N2: TMenuItem;
     Spectrumgraphcolor1: TMenuItem;
     Spectrummaxcolor1: TMenuItem;
     DrawTimeMarker: TMenuItem;
@@ -49,7 +48,23 @@ type
     Showfreqmonitor1: TMenuItem;
     MarkPeaks: TMenuItem;
     Series3: TPointSeries;
-    DirectSampling: TCheckBox;
+    Colors1: TMenuItem;
+    Radio1: TMenuItem;
+    Radio2: TMenuItem;
+    DirectSampling: TMenuItem;
+    Cropfactor1: TMenuItem;
+    Crop0: TMenuItem;
+    Crop10: TMenuItem;
+    Crop20: TMenuItem;
+    Crop30: TMenuItem;
+    Crop40: TMenuItem;
+    Crop50: TMenuItem;
+    Crop60: TMenuItem;
+    Crop70: TMenuItem;
+    Crop80: TMenuItem;
+    Crop90: TMenuItem;
+    Crop100: TMenuItem;
+    Enablepeakhold: TMenuItem;
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -172,6 +187,7 @@ begin
     Ini.WriteBool   ('App', 'DrawTime',   DrawTimeMarker.Checked);
     Ini.WriteBool   ('App', 'MarkPeaks',  MarkPeaks.Checked);
     Ini.WriteBool   ('App', 'DSampling',  DirectSampling.Checked);
+    Ini.WriteBool   ('App', 'EPeakHold',  EnablePeakHold.Checked);
     Ini.WriteInteger('App', 'StepSize',   StepSize.ItemIndex);
     Ini.WriteInteger('App', 'Gain',       Gain.ItemIndex);
     Ini.WriteInteger('App', 'PPM',        PPM.Value);
@@ -180,6 +196,18 @@ begin
     Ini.WriteInteger('App', 'LevelColor', LevelColor);
     Ini.WriteInteger('App', 'MaxColor',   MaxColor);
     Ini.WriteInteger('App', 'WFColor',    WFColor);
+
+    Ini.WriteBool   ('App', 'Crop0',      Crop0.Checked);
+    Ini.WriteBool   ('App', 'Crop10',     Crop10.Checked);
+    Ini.WriteBool   ('App', 'Crop20',     Crop20.Checked);
+    Ini.WriteBool   ('App', 'Crop30',     Crop30.Checked);
+    Ini.WriteBool   ('App', 'Crop40',     Crop40.Checked);
+    Ini.WriteBool   ('App', 'Crop50',     Crop50.Checked);
+    Ini.WriteBool   ('App', 'Crop60',     Crop60.Checked);
+    Ini.WriteBool   ('App', 'Crop70',     Crop70.Checked);
+    Ini.WriteBool   ('App', 'Crop80',     Crop80.Checked);
+    Ini.WriteBool   ('App', 'Crop90',     Crop90.Checked);
+    Ini.WriteBool   ('App', 'Crop100',    Crop100.Checked);
   finally
     Ini.Free;
   end;
@@ -211,6 +239,7 @@ begin
     DrawTimeMarker.Checked := Ini.ReadBool ('App', 'DrawTime', False);
     MarkPeaks.Checked :=    Ini.ReadBool   ('App', 'MarkPeaks', False);
     DirectSampling.Checked := Ini.ReadBool ('App', 'DSampling', False);
+    EnablePeakHold.Checked := Ini.ReadBool ('App', 'EPeakHold', False);
     StepSize.ItemIndex :=   Ini.ReadInteger('App', 'StepSize', 2);
     Gain.ItemIndex :=       Ini.ReadInteger('App', 'Gain', 0);
     PPM.Value :=            Ini.ReadInteger('App', 'PPM', 0);
@@ -219,6 +248,18 @@ begin
     LevelColor :=           Ini.ReadInteger('App', 'LevelColor', clBlue);
     MaxColor :=             Ini.ReadInteger('App', 'MaxColor', clRed);
     WFColor :=              Ini.ReadInteger('App', 'WFColor', clRed);
+
+    Crop0.Checked :=        Ini.ReadBool   ('App', 'Crop0', False);
+    Crop10.Checked :=       Ini.ReadBool   ('App', 'Crop10', False);
+    Crop20.Checked :=       Ini.ReadBool   ('App', 'Crop20', False);
+    Crop30.Checked :=       Ini.ReadBool   ('App', 'Crop30', False);
+    Crop40.Checked :=       Ini.ReadBool   ('App', 'Crop40', False);
+    Crop50.Checked :=       Ini.ReadBool   ('App', 'Crop50', False);
+    Crop60.Checked :=       Ini.ReadBool   ('App', 'Crop60', False);
+    Crop70.Checked :=       Ini.ReadBool   ('App', 'Crop70', False);
+    Crop80.Checked :=       Ini.ReadBool   ('App', 'Crop80', False);
+    Crop90.Checked :=       Ini.ReadBool   ('App', 'Crop90', False);
+    Crop100.Checked :=      Ini.ReadBool   ('App', 'Crop100', False);
   finally
     Ini.Free;
   end;
@@ -555,10 +596,28 @@ begin
   CommandLine := '-f ' + IntToStr(FromMHZ.Value) + ':'
                        + IntToStr(TillMHZ.Value) + ':'
                        + StepSize.Text;
+
   if not TunerAGC.Checked then
     CommandLine := CommandLine + ' -g ' + Gain.Text;
+
   if DirectSampling.Checked then
     CommandLine := CommandLine + ' -D';
+
+  if EnablePeakHold.Checked then
+    CommandLine := CommandLine + ' -P';
+
+  if Crop0.Checked  then CommandLine := CommandLine + ' -c 0%';
+  if Crop10.Checked then CommandLine := CommandLine + ' -c 10%';
+  if Crop20.Checked then CommandLine := CommandLine + ' -c 20%';
+  if Crop30.Checked then CommandLine := CommandLine + ' -c 30%';
+  if Crop40.Checked then CommandLine := CommandLine + ' -c 40%';
+  if Crop50.Checked then CommandLine := CommandLine + ' -c 50%';
+  if Crop60.Checked then CommandLine := CommandLine + ' -c 60%';
+  if Crop70.Checked then CommandLine := CommandLine + ' -c 70%';
+  if Crop80.Checked then CommandLine := CommandLine + ' -c 80%';
+  if Crop90.Checked then CommandLine := CommandLine + ' -c 90%';
+  if Crop100.Checked then CommandLine := CommandLine + ' -c 99%';
+
   CommandLine := CommandLine + ' -p ' + IntToStr(PPM.Value);
   CommandLine := CommandLine + ' -d ' + IntToStr(ChooseDongle.Value);
   CommandLine := CommandLine + ' -1 -i 1s scan.csv';
