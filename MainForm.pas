@@ -141,6 +141,9 @@ var
 
   Frequencies: TStringList;
 
+  iMaxDb: Integer = 0;
+  iMinDb: Integer = -120;
+
 implementation
 
 {$R *.dfm}
@@ -260,6 +263,9 @@ begin
     Crop80.Checked :=       Ini.ReadBool   ('App', 'Crop80', False);
     Crop90.Checked :=       Ini.ReadBool   ('App', 'Crop90', False);
     Crop100.Checked :=      Ini.ReadBool   ('App', 'Crop100', False);
+
+    iMaxDb :=               Ini.ReadInteger('App', 'MaxDb', 0);
+    iMinDb :=               Ini.ReadInteger('App', 'MinDb', -120);
   finally
     Ini.Free;
   end;
@@ -501,8 +507,8 @@ begin
     Chart1.LeftAxis.Automatic := True;
   end else begin
     Chart1.LeftAxis.Automatic := False;
-    Chart1.LeftAxis.Minimum := -120;
-    Chart1.LeftAxis.Maximum := 0;
+    Chart1.LeftAxis.Minimum := iMinDb;
+    Chart1.LeftAxis.Maximum := iMaxDb;
   end;
 
   // Visibility of chart peaks
