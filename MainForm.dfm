@@ -1,7 +1,7 @@
 object fMain: TfMain
-  Left = 427
+  Left = 426
   Height = 419
-  Top = 115
+  Top = 89
   Width = 764
   Caption = 'rtl-sdr dongle panorama'
   ClientHeight = 419
@@ -361,7 +361,31 @@ object fMain: TfMain
     Width = 764
     Align = alTop
     BevelOuter = bvNone
+    ClientHeight = 170
+    ClientWidth = 764
     TabOrder = 3
+    object Chart1: TChart
+      Left = 112
+      Height = 200
+      Top = 48
+      Width = 300
+      AxisList = <      
+        item
+          Minors = <>
+          Title.LabelFont.Orientation = 900
+        end      
+        item
+          Alignment = calBottom
+          Minors = <>
+        end>
+      Foot.Brush.Color = clBtnFace
+      Foot.Font.Color = clBlue
+      Title.Brush.Color = clBtnFace
+      Title.Font.Color = clBlue
+      Title.Text.Strings = (
+        'TAChart'
+      )
+    end
   end
   object PopupMenu1: TPopupMenu
     left = 24

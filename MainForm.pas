@@ -13,6 +13,7 @@ type
   { TfMain }
 
   TfMain = class(TForm)
+    Chart1: TChart;
     MenuItem1: TMenuItem;
     Panel2: TPanel;
     StatusBar: TStatusBar;
