@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="9"/>
+    <BuildModes Active="Default"/>
+    <Units Count="14">
+      <Unit0>
+        <Filename Value="rtlpan.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos Y="15"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="FreqMonitor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="fFreqMonitor"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="22"/>
+        <CursorPos X="18" Y="37"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="MainForm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="fMain"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="473"/>
+        <CursorPos X="20" Y="495"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="../../lazarus/components/tachart/taseries.pas"/>
+        <UnitName Value="TASeries"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="210"/>
+        <CursorPos X="37" Y="242"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="../../lazarus/components/tachart/tacustomseries.pas"/>
+        <UnitName Value="TACustomSeries"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="8"/>
+        <CursorPos X="3" Y="243"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="MainForm.dfm"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="122"/>
+        <CursorPos X="26" Y="133"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="../../lazarus/components/tachart/tagraph.pas"/>
+        <UnitName Value="TAGraph"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="617"/>
+        <CursorPos X="14" Y="627"/>
+        <UsageCount Value="10"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="../../lazarus/components/tachart/tachartaxis.pas"/>
+        <UnitName Value="TAChartAxis"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="48"/>
+        <CursorPos X="3" Y="52"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="../../lazarus/lcl/include/application.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2138"/>
+        <CursorPos Y="2167"/>
+        <UsageCount Value="10"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="../../lazarus/lcl/include/customform.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1985"/>
+        <CursorPos Y="2009"/>
+        <UsageCount Value="10"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="../../lazarus/lcl/include/control.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="5376"/>
+        <CursorPos Y="5408"/>
+        <UsageCount Value="10"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="../../lazarus/lcl/include/scrollingwincontrol.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="288"/>
+        <CursorPos Y="320"/>
+        <UsageCount Value="10"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="../../lazarus/lcl/include/customcontrol.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="10"/>
+        <CursorPos Y="42"/>
+        <UsageCount Value="10"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="../../lazarus/lcl/include/wincontrol.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="6476"/>
+        <CursorPos Y="6508"/>
+        <UsageCount Value="10"/>
+      </Unit13>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="741" TopLine="721"/>
+      </Position1>
+      <Position2>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="742" TopLine="721"/>
+      </Position2>
+      <Position3>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="743" TopLine="721"/>
+      </Position3>
+      <Position4>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="754" TopLine="722"/>
+      </Position4>
+      <Position5>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="738" Column="9" TopLine="727"/>
+      </Position5>
+      <Position6>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="486" Column="5" TopLine="460"/>
+      </Position6>
+      <Position7>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="485" TopLine="460"/>
+      </Position7>
+      <Position8>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="486" TopLine="460"/>
+      </Position8>
+      <Position9>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="487" TopLine="460"/>
+      </Position9>
+      <Position10>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="488" TopLine="460"/>
+      </Position10>
+      <Position11>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="489" TopLine="460"/>
+      </Position11>
+      <Position12>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="490" TopLine="460"/>
+      </Position12>
+      <Position13>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="740" Column="11" TopLine="716"/>
+      </Position13>
+      <Position14>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="492" Column="8" TopLine="460"/>
+      </Position14>
+      <Position15>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="490" Column="26" TopLine="473"/>
+      </Position15>
+      <Position16>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="492" TopLine="473"/>
+      </Position16>
+      <Position17>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="493" TopLine="473"/>
+      </Position17>
+      <Position18>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="494" TopLine="473"/>
+      </Position18>
+      <Position19>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="496" Column="60" TopLine="473"/>
+      </Position19>
+      <Position20>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="492" TopLine="473"/>
+      </Position20>
+      <Position21>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="493" TopLine="473"/>
+      </Position21>
+      <Position22>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="494" TopLine="473"/>
+      </Position22>
+      <Position23>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="495" TopLine="473"/>
+      </Position23>
+      <Position24>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="496" TopLine="473"/>
+      </Position24>
+      <Position25>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="495" Column="20" TopLine="473"/>
+      </Position25>
+      <Position26>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="494" Column="20" TopLine="472"/>
+      </Position26>
+      <Position27>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="495" Column="20" TopLine="473"/>
+      </Position27>
+      <Position28>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="494" Column="20" TopLine="472"/>
+      </Position28>
+      <Position29>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="495" Column="20" TopLine="473"/>
+      </Position29>
+      <Position30>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="494" Column="20" TopLine="472"/>
+      </Position30>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>

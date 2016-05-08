@@ -1,30 +1,26 @@
-object Form1: TForm1
-  Left = 0
-  Top = 0
-  ParentCustomHint = False
+object fMain: TfMain
+  Left = 427
+  Height = 419
+  Top = 115
+  Width = 764
   Caption = 'rtl-sdr dongle panorama'
   ClientHeight = 419
   ClientWidth = 764
   Color = clBtnFace
-  Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
-  Font.Style = []
-  OldCreateOrder = False
-  ShowHint = True
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
-  PixelsPerInch = 96
-  TextHeight = 13
+  ShowHint = True
+  LCLVersion = '1.7'
   object WaterFall: TPaintBox
     Left = 0
-    Top = 286
+    Height = 180
+    Top = 214
     Width = 764
-    Height = 114
-    ParentCustomHint = False
     Align = alClient
     Color = clBtnFace
     ParentColor = False
@@ -34,192 +30,103 @@ object Form1: TForm1
     OnMouseLeave = WaterFallMouseLeave
     OnMouseMove = WaterFallMouseMove
     OnPaint = WaterFallPaint
-    ExplicitLeft = 1
-    ExplicitWidth = 779
   end
   object Splitter1: TSplitter
-    Left = 0
-    Top = 283
-    Width = 764
-    Height = 3
     Cursor = crVSplit
+    Left = 0
+    Height = 3
+    Top = 41
+    Width = 764
     Align = alTop
     OnMoved = Splitter1Moved
-    ExplicitWidth = 117
+    ResizeAnchor = akTop
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 400
+    Height = 25
+    Top = 394
     Width = 764
-    Height = 19
-    ParentCustomHint = False
-    Panels = <
+    Panels = <    
       item
         Text = 'Ready...'
         Width = 250
-      end
+      end    
       item
         Text = 'Step: 0 Hz'
         Width = 120
-      end
+      end    
       item
         Text = 'FFT bins'
         Width = 50
       end>
     ParentShowHint = False
-    ShowHint = True
     SimpleText = 'ready'
-  end
-  object Chart1: TChart
-    Left = 0
-    Top = 41
-    Width = 764
-    Height = 242
-    ParentCustomHint = False
-    Legend.Visible = False
-    MarginBottom = 0
-    MarginLeft = 0
-    MarginRight = 0
-    MarginTop = 1
-    Title.Text.Strings = (
-      'TChart')
-    Title.Visible = False
-    BottomAxis.LabelsFormat.TextAlignment = taCenter
-    BottomAxis.Title.Caption = 'Hz'
-    DepthAxis.LabelsFormat.TextAlignment = taCenter
-    DepthTopAxis.LabelsFormat.TextAlignment = taCenter
-    LeftAxis.Axis.SmallSpace = 1
-    LeftAxis.LabelsFormat.TextAlignment = taCenter
-    LeftAxis.Title.Caption = 'dB'
-    RightAxis.LabelsFormat.TextAlignment = taCenter
-    TopAxis.LabelsFormat.TextAlignment = taCenter
-    View3D = False
-    Zoom.Pen.Mode = pmNotXor
-    Align = alTop
-    ParentShowHint = False
     ShowHint = True
-    TabOrder = 1
-    OnMouseEnter = Chart1MouseEnter
-    OnMouseLeave = Chart1MouseLeave
-    OnMouseMove = Chart1MouseMove
-    DefaultCanvas = 'TGDIPlusCanvas'
-    ColorPaletteIndex = 13
-    object Series1: TLineSeries
-      Marks.Visible = False
-      SeriesColor = clBlue
-      Brush.BackColor = clDefault
-      Pointer.InflateMargins = True
-      Pointer.Style = psRectangle
-      Pointer.Visible = False
-      XValues.Name = 'X'
-      XValues.Order = loAscending
-      YValues.Name = 'Y'
-      YValues.Order = loNone
-    end
-    object Series2: TLineSeries
-      Marks.Visible = False
-      Brush.BackColor = clDefault
-      Pointer.HorizSize = 1
-      Pointer.InflateMargins = True
-      Pointer.Style = psRectangle
-      Pointer.VertSize = 1
-      Pointer.Visible = False
-      XValues.Name = 'X'
-      XValues.Order = loAscending
-      YValues.Name = 'Y'
-      YValues.Order = loNone
-      Transparency = 77
-    end
-    object Series3: TPointSeries
-      Marks.Visible = False
-      SeriesColor = clLime
-      ClickableLine = False
-      Pointer.Brush.Gradient.EndColor = clLime
-      Pointer.Gradient.EndColor = clLime
-      Pointer.HorizSize = 3
-      Pointer.InflateMargins = True
-      Pointer.Style = psCircle
-      Pointer.VertSize = 3
-      Pointer.Visible = True
-      XValues.Name = 'X'
-      XValues.Order = loAscending
-      YValues.Name = 'Y'
-      YValues.Order = loNone
-    end
   end
   object Panel1: TPanel
     Left = 0
+    Height = 41
     Top = 0
     Width = 764
-    Height = 41
     Align = alTop
+    ClientHeight = 41
+    ClientWidth = 764
     TabOrder = 2
     object StartStop: TBitBtn
       Left = 3
+      Height = 26
       Top = 8
-      Width = 75
-      Height = 25
-      ParentCustomHint = False
+      Width = 50
+      AutoSize = True
       Caption = 'START'
-      Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
+      OnClick = StartStopClick
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
-      OnClick = StartStopClick
     end
     object FromMHZ: TSpinEdit
       Left = 130
-      Top = 10
-      Width = 82
-      Height = 22
+      Height = 24
       Hint = 'Start scanning from, Hz'
-      ParentCustomHint = False
+      Top = 10
+      Width = 94
       Increment = 1000000
       MaxValue = 0
-      MinValue = 0
+      OnChange = ResetMaxPowerLevel
+      OnKeyPress = PressResetMaxPowerLevel
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
       Value = 1090000000
-      OnChange = ResetMaxPowerLevel
-      OnKeyPress = PressResetMaxPowerLevel
     end
     object TillMHZ: TSpinEdit
-      Left = 215
-      Top = 10
-      Width = 82
-      Height = 22
+      Left = 232
+      Height = 24
       Hint = 'Scan to, Hz'
-      ParentCustomHint = False
+      Top = 10
+      Width = 96
       Increment = 1000000
       MaxValue = 0
-      MinValue = 0
+      OnChange = ResetMaxPowerLevel
+      OnKeyPress = PressResetMaxPowerLevel
       ParentShowHint = False
       ShowHint = True
       TabOrder = 2
       Value = 1090000000
-      OnChange = ResetMaxPowerLevel
-      OnKeyPress = PressResetMaxPowerLevel
     end
     object StepSize: TComboBox
-      Left = 300
-      Top = 10
-      Width = 48
-      Height = 21
+      Left = 336
+      Height = 27
       Hint = 'Scanning step size'
-      ParentCustomHint = False
+      Top = 8
+      Width = 48
+      ItemHeight = 0
       ItemIndex = 2
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 3
-      Text = '10k'
-      OnChange = ResetMaxPowerLevel
-      OnKeyPress = PressResetMaxPowerLevel
       Items.Strings = (
         '1k'
         '5k'
@@ -227,23 +134,23 @@ object Form1: TForm1
         '25k'
         '50k'
         '100k'
-        '1M')
-    end
-    object Gain: TComboBox
-      Left = 424
-      Top = 10
-      Width = 47
-      Height = 21
-      Hint = 'Gain value'
-      ParentCustomHint = False
-      Style = csDropDownList
-      ItemIndex = 19
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 4
-      Text = '36.4'
+        '1M'
+      )
       OnChange = ResetMaxPowerLevel
       OnKeyPress = PressResetMaxPowerLevel
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      Text = '10k'
+    end
+    object Gain: TComboBox
+      Left = 448
+      Height = 27
+      Hint = 'Gain value'
+      Top = 10
+      Width = 63
+      ItemHeight = 0
+      ItemIndex = 19
       Items.Strings = (
         '0.0'
         '0.9'
@@ -273,60 +180,62 @@ object Form1: TForm1
         '43.9'
         '44.5'
         '48.0'
-        '49.6')
+        '49.6'
+      )
+      OnChange = ResetMaxPowerLevel
+      OnKeyPress = PressResetMaxPowerLevel
+      ParentShowHint = False
+      ShowHint = True
+      Style = csDropDownList
+      TabOrder = 4
+      Text = '36.4'
     end
     object PPM: TSpinEdit
-      Left = 474
+      Left = 520
+      Height = 24
+      Hint = 'PPM correction value'
       Top = 10
       Width = 40
-      Height = 22
-      Hint = 'PPM correction value'
-      ParentCustomHint = False
       MaxValue = 500
       MinValue = -500
+      OnChange = ResetMaxPowerLevel
+      OnKeyPress = PressResetMaxPowerLevel
       ParentShowHint = False
       ShowHint = True
       TabOrder = 5
       Value = 90
-      OnChange = ResetMaxPowerLevel
-      OnKeyPress = PressResetMaxPowerLevel
     end
     object ChooseDongle: TSpinEdit
-      Left = 516
+      Left = 562
+      Height = 24
+      Hint = 'Dongle Nr#'
       Top = 10
       Width = 30
-      Height = 22
-      Hint = 'Dongle Nr#'
-      ParentCustomHint = False
-      MaxValue = 100
-      MinValue = 0
+      OnChange = ResetMaxPowerLevel
+      OnKeyPress = PressResetMaxPowerLevel
       ParentShowHint = False
       ShowHint = True
       TabOrder = 6
       Value = 1
-      OnChange = ResetMaxPowerLevel
-      OnKeyPress = PressResetMaxPowerLevel
     end
     object DrawMaxPower: TCheckBox
-      Left = 634
-      Top = 12
-      Width = 68
-      Height = 17
+      Left = 680
+      Height = 22
       Hint = 'Draw spectrum power maximums'
-      ParentCustomHint = False
+      Top = 10
+      Width = 86
       Caption = 'Maximums'
+      OnClick = AutoAxisClick
       ParentShowHint = False
       ShowHint = True
       TabOrder = 7
-      OnClick = AutoAxisClick
     end
     object SavePicturesToFiles: TBitBtn
-      Left = 718
-      Top = 8
-      Width = 40
+      Left = 824
       Height = 25
       Hint = 'Immediately save spectrum and waterfall to bitmap files'
-      ParentCustomHint = False
+      Top = 8
+      Width = 40
       Glyph.Data = {
         36050000424D3605000000000000360400002800000010000000100000000100
         08000000000000010000C40E0000C40E00000001000000000000000000000000
@@ -369,31 +278,32 @@ object Form1: TForm1
         494949FF49099A9A510000519A9A09A449FFFF499B099A9A5100005109090909
         A44949A3090D0D09510000510909090909090909090DF9095100005151515151
         5151515151515151510000005109510000000000000000000000000051515100
-        0000000000000000000000000000000000000000000000000000}
+        0000000000000000000000000000000000000000000000000000
+      }
+      OnClick = SavePicturesToFilesClick
       ParentShowHint = False
       ShowHint = True
       TabOrder = 8
-      OnClick = SavePicturesToFilesClick
     end
     object AutoAxis: TCheckBox
-      Left = 572
-      Top = 12
-      Width = 57
-      Height = 17
+      Left = 608
+      Height = 22
       Hint = 'Automatically adjust dB axis'
-      ParentCustomHint = False
+      Top = 10
+      Width = 68
       Caption = 'Auto dB'
+      OnClick = AutoAxisClick
       ParentShowHint = False
       ShowHint = True
       TabOrder = 9
-      OnClick = AutoAxisClick
     end
     object OptionsButton: TBitBtn
-      Left = 84
-      Top = 8
-      Width = 40
-      Height = 25
+      Left = 56
+      Height = 28
       Hint = 'Advanced program options'
+      Top = 8
+      Width = 26
+      AutoSize = True
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         20000000000000040000C40E0000C40E00000000000000000000000000000000
@@ -428,24 +338,34 @@ object Form1: TForm1
         000000000000000000003E3227FF7D6349FF1B1106FF857866FFFFFFF1FF6B5C
         4FFF00000000372B20FF20160DFF000000000000000000000000000000000000
         000000000000000000000000000000000000000000000000000044372AFF251C
-        12FF000000000000000000000000000000000000000000000000}
-      TabOrder = 10
+        12FF000000000000000000000000000000000000000000000000
+      }
       OnClick = OptionsButtonClick
+      TabOrder = 10
     end
     object TunerAGC: TCheckBox
       Left = 382
-      Top = 12
-      Width = 41
-      Height = 17
+      Height = 22
       Hint = 'Use Tuner AGC when checked'
+      Top = 12
+      Width = 49
       Caption = 'AGC'
-      TabOrder = 11
       OnClick = TunerAGCClick
+      TabOrder = 11
     end
   end
+  object Panel2: TPanel
+    Left = 0
+    Height = 170
+    Top = 44
+    Width = 764
+    Align = alTop
+    BevelOuter = bvNone
+    TabOrder = 3
+  end
   object PopupMenu1: TPopupMenu
-    Left = 24
-    Top = 352
+    left = 24
+    top = 352
     object Loadpreset1: TMenuItem
       Caption = 'Load preset...'
       Hint = 'Load software settings from preset file'
@@ -461,6 +381,10 @@ object Form1: TForm1
     end
     object Radio2: TMenuItem
       Caption = 'Rtl_power options...'
+      object MenuItem1: TMenuItem
+        Caption = 'execute Remote'
+        OnClick = MenuItem1Click
+      end
       object Cropfactor1: TMenuItem
         Caption = 'Crop percent...'
         object Crop0: TMenuItem
@@ -560,9 +484,7 @@ object Form1: TForm1
       end
       object LimitWaterFall: TMenuItem
         Caption = 'Limit waterfall to screen size'
-        Hint = 
-          'Enable this option to limit waterfall image resolution by its re' +
-          'al screen size (otherwise 1920*1080)'
+        Hint = 'Enable this option to limit waterfall image resolution by its real screen size (otherwise 1920*1080)'
         OnClick = InvertMenuitem
       end
       object DrawTimeMarker: TMenuItem
@@ -584,19 +506,42 @@ object Form1: TForm1
     end
   end
   object OpenDialog1: TOpenDialog
-    DefaultExt = 'ini'
+    DefaultExt = '.ini'
     Filter = 'rtl_panorama preset files|*.ini'
-    Left = 90
-    Top = 352
+    left = 90
+    top = 352
   end
   object SaveDialog1: TSaveDialog
-    DefaultExt = 'ini'
+    DefaultExt = '.ini'
     Filter = 'rtl_panorama preset files|*.ini|text files|*.txt'
-    Left = 154
-    Top = 352
+    left = 154
+    top = 352
   end
   object ColorDialog1: TColorDialog
-    Left = 216
-    Top = 352
+    Color = clBlack
+    CustomColors.Strings = (
+      'ColorA=000000'
+      'ColorB=000080'
+      'ColorC=008000'
+      'ColorD=008080'
+      'ColorE=800000'
+      'ColorF=800080'
+      'ColorG=808000'
+      'ColorH=808080'
+      'ColorI=C0C0C0'
+      'ColorJ=0000FF'
+      'ColorK=00FF00'
+      'ColorL=00FFFF'
+      'ColorM=FF0000'
+      'ColorN=FF00FF'
+      'ColorO=FFFF00'
+      'ColorP=FFFFFF'
+      'ColorQ=C0DCC0'
+      'ColorR=F0CAA6'
+      'ColorS=F0FBFF'
+      'ColorT=A4A0A0'
+    )
+    left = 216
+    top = 352
   end
 end

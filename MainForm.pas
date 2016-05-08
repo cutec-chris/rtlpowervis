@@ -3,18 +3,19 @@ unit MainForm;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Buttons, StrUtils,
-  Vcl.ExtCtrls, Math, Vcl.Samples.Spin, IniFiles, VclTee.TeeGDIPlus, Character,
-  VCLTee.TeEngine, VCLTee.TeeProcs, VCLTee.Chart, VCLTee.Series, VCLTee.BubbleCh,
-  Vcl.Menus;
+  LMessages, SysUtils, Variants, Classes, Graphics,
+  Controls, Forms, Dialogs, ComCtrls, StdCtrls, Buttons, StrUtils,
+  ExtCtrls, Math, Spin, IniFiles,process, TAGraph, TASeries,
+  Menus;
 
 type
-  TForm1 = class(TForm)
+
+  { TfMain }
+
+  TfMain = class(TForm)
+    MenuItem1: TMenuItem;
+    Panel2: TPanel;
     StatusBar: TStatusBar;
-    Chart1: TChart;
-    Series2: TLineSeries;
-    Series1: TLineSeries;
     WaterFall: TPaintBox;
     Panel1: TPanel;
     StartStop: TBitBtn;
@@ -47,7 +48,6 @@ type
     N3: TMenuItem;
     Showfreqmonitor1: TMenuItem;
     MarkPeaks: TMenuItem;
-    Series3: TPointSeries;
     Colors1: TMenuItem;
     Radio1: TMenuItem;
     Radio2: TMenuItem;
@@ -65,6 +65,7 @@ type
     Crop90: TMenuItem;
     Crop100: TMenuItem;
     Enablepeakhold: TMenuItem;
+    procedure MenuItem1Click(Sender: TObject);
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -116,7 +117,7 @@ type
 
 var
   AppDir: String;
-  Form1: TForm1;
+  fMain: TfMain;
   Ini: TIniFile;
   ScanCounter: Int64 = 0;
   Processing: Boolean = False;
@@ -124,6 +125,8 @@ var
 
   Freq, MaxPower, Power: Array of Double;
   Peak: Array of Boolean;
+
+  RemoteIP : string;
 
   WFBitmap: TBitmap;
 
@@ -150,7 +153,7 @@ implementation
 
 uses FreqMonitor;
 
-procedure TForm1.StartStopClick(Sender: TObject);
+procedure TfMain.StartStopClick(Sender: TObject);
 begin
   Processing := not Processing;
   if Processing then begin
@@ -161,7 +164,12 @@ begin
     StartStop.Caption := 'START';
 end;
 
-procedure TForm1.TunerAGCClick(Sender: TObject);
+procedure TfMain.MenuItem1Click(Sender: TObject);
+begin
+  RemoteIP := InputBox('IP to execute remote','IP',RemoteIP);
+end;
+
+procedure TfMain.TunerAGCClick(Sender: TObject);
 begin
   if TunerAGC.Checked then
     Gain.Enabled := False
@@ -169,13 +177,13 @@ begin
     Gain.Enabled := True;
 end;
 
-procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TfMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   SavePresetToFile( ChangeFileExt(Application.ExeName, '.ini') );
   Processing := False;
 end;
 
-procedure TForm1.SavePresetToFile(F: String);
+procedure TfMain.SavePresetToFile(F: String);
 begin
   Ini := TIniFile.Create(F);
   try
@@ -199,6 +207,7 @@ begin
     Ini.WriteInteger('App', 'LevelColor', LevelColor);
     Ini.WriteInteger('App', 'MaxColor',   MaxColor);
     Ini.WriteInteger('App', 'WFColor',    WFColor);
+    Ini.WriteString('App', 'RemoteIP',   RemoteIP);
 
     Ini.WriteBool   ('App', 'Crop0',      Crop0.Checked);
     Ini.WriteBool   ('App', 'Crop10',     Crop10.Checked);
@@ -216,18 +225,18 @@ begin
   end;
 end;
 
-procedure TForm1.Showfreqmonitor1Click(Sender: TObject);
+procedure TfMain.Showfreqmonitor1Click(Sender: TObject);
 begin
-  Form2.Visible := not Form2.Visible;
+  fFreqMonitor.Visible := not fFreqMonitor.Visible;
 end;
 
-procedure TForm1.Loadpreset1Click(Sender: TObject);
+procedure TfMain.Loadpreset1Click(Sender: TObject);
 begin
   if OpenDialog1.Execute then
     LoadPresetFromFile(OpenDialog1.FileName);
 end;
 
-procedure TForm1.LoadPresetFromFile(F: String);
+procedure TfMain.LoadPresetFromFile(F: String);
 begin
   Ini := TIniFile.Create(F);
   try
@@ -251,6 +260,7 @@ begin
     LevelColor :=           Ini.ReadInteger('App', 'LevelColor', clBlue);
     MaxColor :=             Ini.ReadInteger('App', 'MaxColor', clRed);
     WFColor :=              Ini.ReadInteger('App', 'WFColor', clRed);
+    RemoteIP:=              Ini.ReadString( 'App', 'RemoteIP', '12.0.0.1') ;
 
     Crop0.Checked :=        Ini.ReadBool   ('App', 'Crop0', False);
     Crop10.Checked :=       Ini.ReadBool   ('App', 'Crop10', False);
@@ -274,9 +284,9 @@ begin
   TunerAGCClick(Self);
 end;
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TfMain.FormCreate(Sender: TObject);
 begin
-  AppDir := ExtractFilePath(Application.ExeName);
+  AppDir := Application.Location;
 
   LoadPresetFromFile( ChangeFileExt(Application.ExeName, '.ini') );
 
@@ -295,20 +305,20 @@ begin
   SaveDialog1.InitialDir := AppDir;
 end;
 
-procedure TForm1.FormDestroy(Sender: TObject);
+procedure TfMain.FormDestroy(Sender: TObject);
 begin
   Frequencies.Free;
   WFBitmap.Free;
 end;
 
-procedure TForm1.FormResize(Sender: TObject);
+procedure TfMain.FormResize(Sender: TObject);
 begin
-  if Form1.Height <= Chart1.Height + 100 then
-    if Form1.Height > 160 then
-      Chart1.Height := Form1.Height - 150;
+  if fMain.Height <= Chart1.Height + 100 then
+    if fMain.Height > 160 then
+      Chart1.Height := fMain.Height - 150;
 end;
 
-procedure TForm1.InvertMenuitem(Sender: TObject);
+procedure TfMain.InvertMenuitem(Sender: TObject);
 begin
   (Sender as TMenuItem).Checked := not (Sender as TMenuItem).Checked;
 end;
@@ -326,10 +336,10 @@ begin
   end;
   color := ColorToRGB(WFColor);
   r := color; g := color shr 8; b := color shr 16;
-  Result := RGB(Round(coeff*r), Round(coeff*g), 110);
+  Result := RGBToColor(Round(coeff*r), Round(coeff*g), 110);
 end;
 
-procedure TForm1.DrawWaterFallPicture;
+procedure TfMain.DrawWaterFallPicture;
 begin
   if LimitWaterFall.Checked then
     WFBitmap.SetSize(WaterFall.Width, WaterFall.Height)
@@ -342,7 +352,7 @@ begin
   );
 end;
 
-procedure TForm1.AddLineToWaterFall;
+procedure TfMain.AddLineToWaterFall;
 var
   i: integer;
   TempFall: TBitmap;
@@ -390,7 +400,7 @@ begin
   end;
 end;
 
-procedure TForm1.Log(Band: String; Bin: String = ''; FFT: String = '');
+procedure TfMain.Log(Band: String; Bin: String = ''; FFT: String = '');
 begin
   if Band <> '' then
   StatusBar.Panels[0].Text := Band;
@@ -400,7 +410,7 @@ begin
     StatusBar.Panels[2].Text := FFT;
 end;
 
-procedure TForm1.SavePicturesToFilesClick(Sender: TObject);
+procedure TfMain.SavePicturesToFilesClick(Sender: TObject);
 var
   FileName: String;
 begin
@@ -408,53 +418,54 @@ begin
         StringReplace(TimeToStr(Now), ':', '', [rfReplaceAll]) + '_' +
         StringReplace(DateToStr(Now),
           FormatSettings.DateSeparator, '', [rfReplaceAll]) + '.bmp';
-  Chart1.SaveToBitmapFile(AppDir + 'spectrum_' + Filename);
+  //Chart1.SaveToBitmapFile(AppDir + 'spectrum_' + Filename);
   WFBitmap.SaveToFile(AppDir + 'waterfall_' + Filename);
   Log('Spectrum and waterfall saved');
 end;
 
-procedure TForm1.Savepreset1Click(Sender: TObject);
+procedure TfMain.Savepreset1Click(Sender: TObject);
 begin
   if SaveDialog1.Execute then
     SavePresetToFile(SaveDialog1.FileName);
 end;
 
-procedure TForm1.Spectrumgraphcolor1Click(Sender: TObject);
+procedure TfMain.Spectrumgraphcolor1Click(Sender: TObject);
 begin
   if ColorDialog1.Execute then LevelColor := ColorDialog1.Color;
 end;
 
-procedure TForm1.Spectrummaxcolor1Click(Sender: TObject);
+procedure TfMain.Spectrummaxcolor1Click(Sender: TObject);
 begin
   if ColorDialog1.Execute then MaxColor := ColorDialog1.Color;
 end;
 
-procedure TForm1.Splitter1Moved(Sender: TObject);
+procedure TfMain.Splitter1Moved(Sender: TObject);
 begin
   DrawWF;
 end;
 
-procedure TForm1.AutoAxisClick(Sender: TObject);
+procedure TfMain.AutoAxisClick(Sender: TObject);
 begin
   ProcessVisualSettings;
 end;
 
-procedure TForm1.Chart1MouseEnter(Sender: TObject);
+procedure TfMain.Chart1MouseEnter(Sender: TObject);
 begin
   SPCursor := True;
 end;
 
-procedure TForm1.Chart1MouseLeave(Sender: TObject);
+procedure TfMain.Chart1MouseLeave(Sender: TObject);
 begin
   SPCursor := False;
   Chart1.Repaint;
 end;
 
-procedure TForm1.Chart1MouseMove(Sender: TObject; Shift: TShiftState; X,
+procedure TfMain.Chart1MouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
   tmpX, tmpY: Double;
 begin
+  {
   Chart1.Series[0].GetCursorValues(tmpx, tmpy);
   Chart1.Hint := Chart1.Series[0].GetHorizAxis.LabelValue(tmpX) + ' Hz' + #13#10
     + Chart1.Series[0].GetVertAxis.LabelValue(tmpY) + ' dB';
@@ -462,67 +473,70 @@ begin
   SPCursorX := X;
   SPCursorY := Y;
   DrawSP;
+  }
 end;
 
 function ExecAndWait(const FileName,
-                     Params: ShortString;
-                     const WinState: Word): boolean; export;
+                     Params: ShortString): boolean; export;
 var
-  StartInfo: TStartupInfo;
-  ProcInfo: TProcessInformation;
   CmdLine: String;
+  aProc: TProcess;
+  sl: TStringList;
 begin
   CmdLine := FileName + ' ' + Params;
-  FillChar(StartInfo, SizeOf(StartInfo), #0);
-  with StartInfo do
-  begin
-    cb := SizeOf(StartInfo);
-    dwFlags := STARTF_USESHOWWINDOW;
-    wShowWindow := WinState;
-  end;
-  Result := CreateProcess(nil, PChar( String( CmdLine ) ), nil, nil, false,
-                          CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil,
-                          PChar(ExtractFilePath(Filename)), StartInfo, ProcInfo);
-
-  if Result then begin
-    while True do begin
-      if WaitForSingleObject(ProcInfo.hProcess, 5) = WAIT_OBJECT_0 then Break;
-      Application.ProcessMessages;
-    end;
-    CloseHandle(ProcInfo.hProcess);
-    CloseHandle(ProcInfo.hThread);
+  aProc := TProcess.Create(nil);
+  try
+    aProc.Options:=[poUsePipes];
+    aProc.CommandLine:=CmdLine;
+    aproc.Execute;
+    while aProc.Active do
+      begin
+        Application.ProcessMessages;
+        sleep(100);
+      end;
+    sl := TStringList.Create;
+    sl.LoadFromStream(aProc.Output);
+    if pos(',',sl.Text)>0 then
+      sl.SaveToFile('scan.csv');
+    sl.Free;
+  finally
+    aProc.Free;
   end;
 end;
 
-procedure TForm1.ProcessVisualSettings;
+procedure TfMain.ProcessVisualSettings;
 begin
+  {
   // Visibility of chart MaxPower
   if DrawMaxPower.Checked then
-    Chart1.Series[1].Visible := True
+    Chart1.Series[1].Active := True
   else
-    Chart1.Series[1].Visible := False;
+    Chart1.Series[1].Active := False;
 
   // Automatic chart dB axis
   if AutoAxis.Checked then begin
-    Chart1.LeftAxis.Automatic := True;
+    Chart1.LeftAxis.Range.UseMin := False;
+    Chart1.LeftAxis.Range.UseMax := False;
   end else begin
-    Chart1.LeftAxis.Automatic := False;
-    Chart1.LeftAxis.Minimum := iMinDb;
-    Chart1.LeftAxis.Maximum := iMaxDb;
+    Chart1.LeftAxis.Range.UseMax := True;
+    Chart1.LeftAxis.Range.UseMin := True;
+    Chart1.LeftAxis.Range.Min := iMinDb;
+    Chart1.LeftAxis.Range.Max := iMaxDb;
   end;
 
   // Visibility of chart peaks
   if MarkPeaks.Checked then
-    Chart1.Series[2].Visible := True
+    Chart1.Series[2].Active := True
   else
-    Chart1.Series[2].Visible := False;
+    Chart1.Series[2].Active := False;
 
   // Chart axis visibility
   Chart1.LeftAxis.Visible := LeftAxis.Checked;
   Chart1.BottomAxis.Visible := BottomAxis.Checked;
+  }
 end;
 
-function TForm1.RoundFreq(var Freq: Double): Integer;
+function TfMain.RoundFreq(var Freq: Double): Integer;
 var
   mUnit: Char;
   IntFreq, LoFreq, HiFreq, Offset, Rounder: Int64;
@@ -550,22 +564,24 @@ begin
     Result := HiFreq;
 end;
 
-procedure TForm1.ProcessChart;
+procedure TfMain.ProcessChart;
 var
   i: integer;
 begin
-  Chart1.Series[0].Clear;
-  Chart1.Series[1].Clear;
-  Chart1.Series[2].Clear;
+  {
+  TLineSeries(Chart1.Series[0]).Clear;
+  TLineSeries(Chart1.Series[1]).Clear;
+  TLineSeries(Chart1.Series[2]).Clear;
   for i := 0 to High(Power) do begin
-    Chart1.Series[0].AddXY(Freq[i], Power[i], '', LevelColor);
-    Chart1.Series[1].AddXY(Freq[i], MaxPower[i], '', MaxColor);
+    TLineSeries(Chart1.Series[0]).AddXY(Freq[i], Power[i], '', LevelColor);
+    TLineSeries(Chart1.Series[1]).AddXY(Freq[i], MaxPower[i], '', MaxColor);
     if Peak[i] then
-      Chart1.Series[2].AddXY(Freq[i], Power[i], '', clGreen);
+      TLineSeries(Chart1.Series[2]).AddXY(Freq[i], Power[i], '', clGreen);
   end;
+  }
 end;
 
-function TForm1.LoadRtlPowerData(var Data: TStringList): integer;
+function TfMain.LoadRtlPowerData(var Data: TStringList): integer;
 var
   i: Integer;
   S, S2, DataString: String;
@@ -600,7 +616,7 @@ begin
   Result := Data.Count - 1;
 end;
 
-function TForm1.PrepareCommandLine: String;
+function TfMain.PrepareCommandLine: String;
 var
   CommandLine: String;
 begin
@@ -631,12 +647,12 @@ begin
 
   CommandLine := CommandLine + ' -p ' + IntToStr(PPM.Value);
   CommandLine := CommandLine + ' -d ' + IntToStr(ChooseDongle.Value);
-  CommandLine := CommandLine + ' -1 -i 1s scan.csv';
+  CommandLine := CommandLine + ' -1 -i 1s ';
 
   Result := CommandLine;
 end;
 
-procedure TForm1.InitArrays(var DataSize: integer);
+procedure TfMain.InitArrays(var DataSize: integer);
 var
   i: integer;
 begin
@@ -655,7 +671,7 @@ begin
   Result := StrToInt(List[Index1]) - StrToInt(List[Index2]);
 end;
 
-procedure TForm1.CalculatePeaks;
+procedure TfMain.CalculatePeaks;
 var
   i, j, k, FrameSize: Integer;
   Flag: Boolean;
@@ -696,17 +712,17 @@ begin
   Log('', Format('Step: %.3f Hz', [SpectrumStep]), 'FFT bins: ' + IntToStr(High(Power)));
 end;
 
-procedure TForm1.UpdateFrequencies;
+procedure TfMain.UpdateFrequencies;
 begin
   if Frequencies.Count > 25000 then Frequencies.Clear;
-  if not Form2.Visible then Exit;
+  if not fFreqMonitor.Visible then Exit;
   Frequencies.Sorted := False;
   Frequencies.CustomSort(CompareStringsAsIntegers);
-  Form2.FMListBox.Items := Frequencies;
+  fFreqMonitor.FMListBox.Items := Frequencies;
   Frequencies.Sorted := True;
 end;
 
-procedure TForm1.ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
+procedure TfMain.ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
 var
   i: integer;
 begin
@@ -721,7 +737,7 @@ begin
   end;
 end;
 
-procedure TForm1.MainLoop;
+procedure TfMain.MainLoop;
 var
   Data: TStringList;
   DataSize: Integer;
@@ -729,7 +745,10 @@ begin
 while Processing do begin
   Inc(ScanCounter);
   Log(Format('Scanning %d-%d Hz', [FromMHZ.Value, TillMHZ.Value]));
-  ExecAndWait(AppDir + 'rtl_power.exe', PrepareCommandLine, SW_HIDE);
+  if (trim(RemoteIP)='') or (RemoteIP='127.0.0.1') then
+    ExecAndWait(AppDir + 'rtl_power', PrepareCommandLine+'scan.csv')
+  else
+    ExecAndWait('ssh '+RemoteIP+' "rtl_power', PrepareCommandLine+'"');
   Data := TStringList.Create;
   try
     DataSize := LoadRtlPowerData(Data);
@@ -750,34 +769,34 @@ while Processing do begin
 end;
 end;
 
-procedure TForm1.OptionsButtonClick(Sender: TObject);
+procedure TfMain.OptionsButtonClick(Sender: TObject);
 begin
   PopupMenu1.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
 end;
 
-procedure TForm1.PressResetMaxPowerLevel(Sender: TObject; var Key: Char);
+procedure TfMain.PressResetMaxPowerLevel(Sender: TObject; var Key: Char);
 begin
   if not (Key in ['0'..'9', 'k', 'm', 'K', 'M', #8]) then Key := #0;
   MaxPowerReset := True;
 end;
 
-procedure TForm1.ResetMaxPowerLevel(Sender: TObject);
+procedure TfMain.ResetMaxPowerLevel(Sender: TObject);
 begin
   MaxPowerReset := True;
 end;
 
-procedure TForm1.WaterFallMouseEnter(Sender: TObject);
+procedure TfMain.WaterFallMouseEnter(Sender: TObject);
 begin
   WFCursor := True;
 end;
 
-procedure TForm1.WaterFallMouseLeave(Sender: TObject);
+procedure TfMain.WaterFallMouseLeave(Sender: TObject);
 begin
   WFCursor := False;
   DrawWaterFallPicture;  // to remove red line
 end;
 
-procedure TForm1.WaterFallMouseMove(Sender: TObject; Shift: TShiftState;
+procedure TfMain.WaterFallMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 var
   Freq: Double;
@@ -790,7 +809,7 @@ begin
   DrawWF;
 end;
 
-procedure TForm1.DrawWF;
+procedure TfMain.DrawWF;
 begin
   DrawWaterFallPicture;
 
@@ -805,7 +824,7 @@ begin
   end;
 end;
 
-procedure TForm1.DrawSP;
+procedure TfMain.DrawSP;
 begin
   Chart1.Repaint;
 
@@ -820,12 +839,12 @@ begin
   end;
 end;
 
-procedure TForm1.WaterFallPaint(Sender: TObject);
+procedure TfMain.WaterFallPaint(Sender: TObject);
 begin
   DrawWF;  // on form resize etc
 end;
 
-procedure TForm1.Waterfallcolor1Click(Sender: TObject);
+procedure TfMain.Waterfallcolor1Click(Sender: TObject);
 begin
   if ColorDialog1.Execute then
     WFColor := ColorDialog1.Color;
