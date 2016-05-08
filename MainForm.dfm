@@ -1,7 +1,7 @@
 object fMain: TfMain
-  Left = 494
+  Left = 539
   Height = 482
-  Top = 137
+  Top = 255
   Width = 764
   Caption = 'rtl-sdr dongle panorama'
   ClientHeight = 482
@@ -19,8 +19,8 @@ object fMain: TfMain
   LCLVersion = '1.7'
   object WaterFall: TPaintBox
     Left = 4
-    Height = 193
-    Top = 264
+    Height = 159
+    Top = 298
     Width = 756
     Align = alClient
     BorderSpacing.Left = 4
@@ -37,7 +37,7 @@ object fMain: TfMain
     Cursor = crVSplit
     Left = 0
     Height = 3
-    Top = 261
+    Top = 295
     Width = 764
     Align = alTop
     OnMoved = Splitter1Moved
@@ -67,11 +67,12 @@ object fMain: TfMain
   end
   object Panel1: TPanel
     Left = 0
-    Height = 49
-    Top = 0
+    Height = 41
+    Top = 42
     Width = 764
     Align = alTop
-    ClientHeight = 49
+    BevelOuter = bvNone
+    ClientHeight = 41
     ClientWidth = 764
     TabOrder = 2
     object StartStop: TBitBtn
@@ -367,7 +368,7 @@ object fMain: TfMain
   object Chart1: TChart
     Left = 0
     Height = 212
-    Top = 49
+    Top = 83
     Width = 764
     AxisList = <    
       item
@@ -420,6 +421,34 @@ object fMain: TfMain
       Pointer.Style = psCircle
       Pointer.VertSize = 3
       ShowPoints = True
+    end
+  end
+  object Panel2: TPanel
+    Left = 0
+    Height = 42
+    Top = 0
+    Width = 764
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 42
+    ClientWidth = 764
+    TabOrder = 4
+    object cbPreset: TComboBox
+      Left = 8
+      Height = 27
+      Top = 16
+      Width = 397
+      ItemHeight = 0
+      TabOrder = 0
+      Text = 'cbPreset'
+    end
+    object Label1: TLabel
+      Left = 3
+      Height = 14
+      Top = 0
+      Width = 36
+      Caption = 'Preset'
+      ParentColor = False
     end
   end
   object PopupMenu1: TPopupMenu

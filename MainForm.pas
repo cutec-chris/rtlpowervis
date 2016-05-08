@@ -16,7 +16,10 @@ type
     Chart1: TChart;
     ChartToolset1: TChartToolset;
     ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool;
+    cbPreset: TComboBox;
+    Label1: TLabel;
     MenuItem1: TMenuItem;
+    Panel2: TPanel;
     Series1: TLineSeries;
     Series2: TLineSeries;
     Series3: TLineSeries;
@@ -72,8 +75,6 @@ type
     Enablepeakhold: TMenuItem;
     procedure ChartToolset1DataPointCrosshairTool1AfterMouseMove(
       ATool: TChartTool; APoint: TPoint);
-    procedure ChartToolset1DataPointHintTool1Hint(ATool: TDataPointHintTool;
-      const APoint: TPoint; var AHint: String);
     procedure FromMHZChange(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure StartStopClick(Sender: TObject);
@@ -185,28 +186,24 @@ begin
     TillMHZ.Value:=FromMHZ.Value+1000000;
 end;
 
-procedure TfMain.ChartToolset1DataPointHintTool1Hint(ATool: TDataPointHintTool;
-  const APoint: TPoint; var AHint: String);
-begin
-  {
-  TLineSeries(Chart1.Series[0]).GetNearestPoint(); GetCursorValues(tmpx, tmpy);
-  Chart1.Hint := TLineSeries(Chart1.Series[0]).GetHorizAxis.LabelValue(tmpX) + ' Hz' + #13#10
-    + TLineSeries(Chart1.Series[0]).GetVertAxis.LabelValue(tmpY) + ' dB';
-
-  }
-end;
-
 procedure TfMain.ChartToolset1DataPointCrosshairTool1AfterMouseMove(
   ATool: TChartTool; APoint: TPoint);
 var
   aFreq: Float;
+  ind: Integer;
 begin
-  WFCursorX := APoint.X;
-  WFCursorY := 20;
-  aFreq := FromMHZ.Value + ( (TillMHZ.Value - FromMHZ.Value) / WaterFall.Width ) * APoint.x;
-  WaterFall.Hint := Format('%.3f MHz', [aFreq/1000000]);
-  WFCursor:=True;
-  DrawWF;
+  ind:=TDataPointCrosshairTool(atool).PointIndex;
+  // Ausgabe der Series-Values mit einem gültigen Index
+  if ind>-1 then
+    begin
+      aFreq := Series1.GetXValue(ind);
+      WFCursorX := round(WaterFall.Width * (aFreq-FromMHZ.Value) / (TillMHZ.Value-FromMHZ.Value));
+      WFCursorY := 20;
+      //aFreq := FromMHZ.Value + ( (TillMHZ.Value - FromMHZ.Value) / WaterFall.Width ) * APoint.x;
+      WaterFall.Hint := Format('%.3f MHz', [aFreq/1000000]);
+      WFCursor:=True;
+      DrawWF;
+    end;
 end;
 
 procedure TfMain.TunerAGCClick(Sender: TObject);
@@ -525,7 +522,7 @@ begin
     sl := TStringList.Create;
     sl.LoadFromStream(aProc.Output);
     if (pos(',',sl.Text)>0) then
-      sl.SaveToFile('scan.csv');
+      sl.SaveToFile(AppDir+'scan.csv');
     sl.Free;
   finally
     aProc.Free;
