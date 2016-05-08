@@ -1,7 +1,7 @@
 object fMain: TfMain
-  Left = 426
+  Left = 425
   Height = 419
-  Top = 89
+  Top = 63
   Width = 764
   Caption = 'rtl-sdr dongle panorama'
   ClientHeight = 419
@@ -365,26 +365,50 @@ object fMain: TfMain
     ClientWidth = 764
     TabOrder = 3
     object Chart1: TChart
-      Left = 112
-      Height = 200
-      Top = 48
-      Width = 300
+      Left = 8
+      Height = 242
+      Top = -16
+      Width = 764
       AxisList = <      
         item
           Minors = <>
           Title.LabelFont.Orientation = 900
+          Title.Caption = 'dB'
         end      
         item
           Alignment = calBottom
           Minors = <>
+          Title.Caption = 'Hz'
         end>
       Foot.Brush.Color = clBtnFace
       Foot.Font.Color = clBlue
       Title.Brush.Color = clBtnFace
       Title.Font.Color = clBlue
       Title.Text.Strings = (
-        'TAChart'
+        'TChart'
       )
+      ParentShowHint = False
+      ShowHint = True
+      OnMouseMove = Chart1MouseMove
+      object Series1: TLineSeries
+        Marks.Visible = False
+        LinePen.Color = clBlue
+        Pointer.Visible = False
+      end
+      object Series2: TLineSeries
+        Transparency = 77
+        Marks.Visible = False
+        Pointer.HorizSize = 1
+        Pointer.VertSize = 1
+        Pointer.Visible = False
+      end
+      object Series3: TLineSeries
+        Marks.Visible = False
+        LinePen.Color = clLime
+        Pointer.HorizSize = 3
+        Pointer.Style = psCircle
+        Pointer.VertSize = 3
+      end
     end
   end
   object PopupMenu1: TPopupMenu
