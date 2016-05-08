@@ -1,10 +1,10 @@
 object fMain: TfMain
-  Left = 425
-  Height = 419
-  Top = 63
+  Left = 498
+  Height = 482
+  Top = 241
   Width = 764
   Caption = 'rtl-sdr dongle panorama'
-  ClientHeight = 419
+  ClientHeight = 482
   ClientWidth = 764
   Color = clBtnFace
   Font.Color = clWindowText
@@ -14,18 +14,18 @@ object fMain: TfMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
+  Position = poDesktopCenter
   ShowHint = True
   LCLVersion = '1.7'
   object WaterFall: TPaintBox
     Left = 0
-    Height = 180
-    Top = 214
+    Height = 193
+    Top = 264
     Width = 764
     Align = alClient
     Color = clBtnFace
     ParentColor = False
     ParentShowHint = False
-    ShowHint = True
     OnMouseEnter = WaterFallMouseEnter
     OnMouseLeave = WaterFallMouseLeave
     OnMouseMove = WaterFallMouseMove
@@ -35,7 +35,7 @@ object fMain: TfMain
     Cursor = crVSplit
     Left = 0
     Height = 3
-    Top = 41
+    Top = 261
     Width = 764
     Align = alTop
     OnMoved = Splitter1Moved
@@ -44,7 +44,7 @@ object fMain: TfMain
   object StatusBar: TStatusBar
     Left = 0
     Height = 25
-    Top = 394
+    Top = 457
     Width = 764
     Panels = <    
       item
@@ -65,19 +65,18 @@ object fMain: TfMain
   end
   object Panel1: TPanel
     Left = 0
-    Height = 41
+    Height = 49
     Top = 0
     Width = 764
     Align = alTop
-    ClientHeight = 41
+    ClientHeight = 49
     ClientWidth = 764
     TabOrder = 2
     object StartStop: TBitBtn
       Left = 3
-      Height = 26
-      Top = 8
-      Width = 50
-      AutoSize = True
+      Height = 33
+      Top = 4
+      Width = 69
       Caption = 'START'
       Font.Color = clWindowText
       Font.Height = -11
@@ -90,41 +89,50 @@ object fMain: TfMain
       TabOrder = 0
     end
     object FromMHZ: TSpinEdit
-      Left = 130
-      Height = 24
+      Left = 104
+      Height = 29
       Hint = 'Start scanning from, Hz'
-      Top = 10
-      Width = 94
+      Top = 8
+      Width = 136
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
       Increment = 1000000
       MaxValue = 0
-      OnChange = ResetMaxPowerLevel
+      OnChange = FromMHZChange
       OnKeyPress = PressResetMaxPowerLevel
+      ParentFont = False
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
       Value = 1090000000
     end
     object TillMHZ: TSpinEdit
-      Left = 232
-      Height = 24
+      Left = 240
+      Height = 29
       Hint = 'Scan to, Hz'
-      Top = 10
-      Width = 96
+      Top = 8
+      Width = 136
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
       Increment = 1000000
       MaxValue = 0
-      OnChange = ResetMaxPowerLevel
+      OnChange = TillMHZChange
       OnKeyPress = PressResetMaxPowerLevel
+      ParentFont = False
       ParentShowHint = False
       ShowHint = True
       TabOrder = 2
       Value = 1090000000
     end
     object StepSize: TComboBox
-      Left = 336
-      Height = 27
+      Left = 384
+      Height = 24
       Hint = 'Scanning step size'
-      Top = 8
-      Width = 48
+      Top = 9
+      Width = 72
+      AutoSize = False
       ItemHeight = 0
       ItemIndex = 2
       Items.Strings = (
@@ -144,10 +152,10 @@ object fMain: TfMain
       Text = '10k'
     end
     object Gain: TComboBox
-      Left = 448
+      Left = 528
       Height = 27
       Hint = 'Gain value'
-      Top = 10
+      Top = 9
       Width = 63
       ItemHeight = 0
       ItemIndex = 19
@@ -191,7 +199,7 @@ object fMain: TfMain
       Text = '36.4'
     end
     object PPM: TSpinEdit
-      Left = 520
+      Left = 600
       Height = 24
       Hint = 'PPM correction value'
       Top = 10
@@ -206,7 +214,7 @@ object fMain: TfMain
       Value = 90
     end
     object ChooseDongle: TSpinEdit
-      Left = 562
+      Left = 642
       Height = 24
       Hint = 'Dongle Nr#'
       Top = 10
@@ -219,10 +227,10 @@ object fMain: TfMain
       Value = 1
     end
     object DrawMaxPower: TCheckBox
-      Left = 680
+      Left = 760
       Height = 22
       Hint = 'Draw spectrum power maximums'
-      Top = 10
+      Top = 11
       Width = 86
       Caption = 'Maximums'
       OnClick = AutoAxisClick
@@ -231,10 +239,10 @@ object fMain: TfMain
       TabOrder = 7
     end
     object SavePicturesToFiles: TBitBtn
-      Left = 824
+      Left = 848
       Height = 25
       Hint = 'Immediately save spectrum and waterfall to bitmap files'
-      Top = 8
+      Top = 11
       Width = 40
       Glyph.Data = {
         36050000424D3605000000000000360400002800000010000000100000000100
@@ -286,10 +294,10 @@ object fMain: TfMain
       TabOrder = 8
     end
     object AutoAxis: TCheckBox
-      Left = 608
+      Left = 688
       Height = 22
       Hint = 'Automatically adjust dB axis'
-      Top = 10
+      Top = 11
       Width = 68
       Caption = 'Auto dB'
       OnClick = AutoAxisClick
@@ -298,7 +306,7 @@ object fMain: TfMain
       TabOrder = 9
     end
     object OptionsButton: TBitBtn
-      Left = 56
+      Left = 72
       Height = 28
       Hint = 'Advanced program options'
       Top = 8
@@ -344,71 +352,61 @@ object fMain: TfMain
       TabOrder = 10
     end
     object TunerAGC: TCheckBox
-      Left = 382
+      Left = 462
       Height = 22
       Hint = 'Use Tuner AGC when checked'
-      Top = 12
+      Top = 11
       Width = 49
       Caption = 'AGC'
       OnClick = TunerAGCClick
       TabOrder = 11
     end
   end
-  object Panel2: TPanel
+  object Chart1: TChart
     Left = 0
-    Height = 170
-    Top = 44
+    Height = 212
+    Top = 49
     Width = 764
+    AxisList = <    
+      item
+        Minors = <>
+        Title.LabelFont.Orientation = 900
+        Title.Caption = 'dB'
+      end    
+      item
+        Alignment = calBottom
+        Minors = <>
+        Title.Caption = 'Hz'
+      end>
+    Foot.Brush.Color = clBtnFace
+    Foot.Font.Color = clBlue
+    Title.Brush.Color = clBtnFace
+    Title.Font.Color = clBlue
+    Title.Text.Strings = (
+      'TChart'
+    )
     Align = alTop
-    BevelOuter = bvNone
-    ClientHeight = 170
-    ClientWidth = 764
-    TabOrder = 3
-    object Chart1: TChart
-      Left = 8
-      Height = 242
-      Top = -16
-      Width = 764
-      AxisList = <      
-        item
-          Minors = <>
-          Title.LabelFont.Orientation = 900
-          Title.Caption = 'dB'
-        end      
-        item
-          Alignment = calBottom
-          Minors = <>
-          Title.Caption = 'Hz'
-        end>
-      Foot.Brush.Color = clBtnFace
-      Foot.Font.Color = clBlue
-      Title.Brush.Color = clBtnFace
-      Title.Font.Color = clBlue
-      Title.Text.Strings = (
-        'TChart'
-      )
-      ParentShowHint = False
-      ShowHint = True
-      OnMouseMove = Chart1MouseMove
-      object Series1: TLineSeries
-        Marks.Visible = False
-        LinePen.Color = clBlue
-        Pointer.Visible = False
-      end
-      object Series2: TLineSeries
-        Transparency = 77
-        Marks.Visible = False
-        Pointer.HorizSize = 1
-        Pointer.VertSize = 1
-        Pointer.Visible = False
-      end
-      object Series3: TLineSeries
-        Marks.Visible = False
-        LinePen.Color = clLime
-        Pointer.HorizSize = 3
-        Pointer.Style = psCircle
-        Pointer.VertSize = 3
-      end
+    ParentShowHint = False
+    ShowHint = True
+    OnMouseMove = Chart1MouseMove
+    object Series1: TLineSeries
+      Marks.Visible = False
+      LinePen.Color = clBlue
+      Pointer.Visible = False
+    end
+    object Series2: TLineSeries
+      Transparency = 77
+      Marks.Visible = False
+      Pointer.HorizSize = 1
+      Pointer.VertSize = 1
+      Pointer.Visible = False
+    end
+    object Series3: TLineSeries
+      Marks.Visible = False
+      LinePen.Color = clLime
+      Pointer.HorizSize = 3
+      Pointer.Style = psCircle
+      Pointer.VertSize = 3
     end
   end
   object PopupMenu1: TPopupMenu
@@ -591,5 +589,9 @@ object fMain: TfMain
     )
     left = 216
     top = 352
+  end
+  object ChartToolset1: TChartToolset
+    left = 54
+    top = 62
   end
 end

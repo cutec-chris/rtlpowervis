@@ -5,7 +5,7 @@ interface
 uses
   LMessages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ComCtrls, StdCtrls, Buttons, StrUtils,
-  ExtCtrls, Math, Spin, IniFiles,process, TAGraph, TASeries,
+  ExtCtrls, Math, Spin, IniFiles,process, TAGraph, TASeries, TATools,
   Menus;
 
 type
@@ -14,8 +14,11 @@ type
 
   TfMain = class(TForm)
     Chart1: TChart;
+    ChartToolset1: TChartToolset;
     MenuItem1: TMenuItem;
-    Panel2: TPanel;
+    Series1: TLineSeries;
+    Series2: TLineSeries;
+    Series3: TLineSeries;
     StatusBar: TStatusBar;
     WaterFall: TPaintBox;
     Panel1: TPanel;
@@ -66,6 +69,7 @@ type
     Crop90: TMenuItem;
     Crop100: TMenuItem;
     Enablepeakhold: TMenuItem;
+    procedure FromMHZChange(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -75,6 +79,7 @@ type
       Y: Integer);
     procedure ResetMaxPowerLevel(Sender: TObject);
     procedure PressResetMaxPowerLevel(Sender: TObject; var Key: Char);
+    procedure TillMHZChange(Sender: TObject);
     procedure WaterFallMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure WaterFallPaint(Sender: TObject);
@@ -170,6 +175,13 @@ begin
   RemoteIP := InputBox('IP to execute remote','IP',RemoteIP);
 end;
 
+procedure TfMain.FromMHZChange(Sender: TObject);
+begin
+  ResetMaxPowerLevel(Self);
+  if FromMHZ.Value>TillMHZ.Value then
+    TillMHZ.Value:=FromMHZ.Value+1000000;
+end;
+
 procedure TfMain.TunerAGCClick(Sender: TObject);
 begin
   if TunerAGC.Checked then
@@ -180,8 +192,8 @@ end;
 
 procedure TfMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  SavePresetToFile( ChangeFileExt(Application.ExeName, '.ini') );
   Processing := False;
+  SavePresetToFile( ChangeFileExt(Application.ExeName, '.ini') );
 end;
 
 procedure TfMain.SavePresetToFile(F: String);
@@ -492,12 +504,17 @@ begin
     aproc.Execute;
     while aProc.Active do
       begin
+        if not Processing then
+          begin
+            FreeAndNil(aProc);
+            exit;
+          end;
         Application.ProcessMessages;
         sleep(100);
       end;
     sl := TStringList.Create;
     sl.LoadFromStream(aProc.Output);
-    if pos(',',sl.Text)>0 then
+    if (pos(',',sl.Text)>0) then
       sl.SaveToFile('scan.csv');
     sl.Free;
   finally
@@ -507,7 +524,6 @@ end;
 
 procedure TfMain.ProcessVisualSettings;
 begin
-  {
   // Visibility of chart MaxPower
   if DrawMaxPower.Checked then
     Chart1.Series[1].Active := True
@@ -534,7 +550,6 @@ begin
   // Chart axis visibility
   Chart1.LeftAxis.Visible := LeftAxis.Checked;
   Chart1.BottomAxis.Visible := BottomAxis.Checked;
-  }
 end;
 
 function TfMain.RoundFreq(var Freq: Double): Integer;
@@ -569,7 +584,6 @@ procedure TfMain.ProcessChart;
 var
   i: integer;
 begin
-  {
   TLineSeries(Chart1.Series[0]).Clear;
   TLineSeries(Chart1.Series[1]).Clear;
   TLineSeries(Chart1.Series[2]).Clear;
@@ -579,7 +593,6 @@ begin
     if Peak[i] then
       TLineSeries(Chart1.Series[2]).AddXY(Freq[i], Power[i], '', clGreen);
   end;
-  }
 end;
 
 function TfMain.LoadRtlPowerData(var Data: TStringList): integer;
@@ -595,6 +608,7 @@ begin
 
     // Loading rtl_power scan results
     SourceData.LoadFromFile(AppDir + 'scan.csv');
+    DeleteFile(AppDir + 'scan.csv');
 
     for S in SourceData do begin
       // trim first unnecessary data
@@ -732,7 +746,8 @@ begin
 
   for i := 0 to DataSize do begin
     if Data[i] = '-1.#J' then Data[i] := '-1.00';   // fix -1.#J rtl_power
-    Power[i] := StrToFloat( Trim(Data[i]) );        // populate power
+    if not TryStrToFloat( Trim(Data[i]),Power[i]) then        // populate power
+      Power[i]:=-1;
     if (MaxPower[i] < Power[i]) then
       MaxPower[i] := Power[i];                      // populate max power
   end;
@@ -743,31 +758,37 @@ var
   Data: TStringList;
   DataSize: Integer;
 begin
-while Processing do begin
-  Inc(ScanCounter);
-  Log(Format('Scanning %d-%d Hz', [FromMHZ.Value, TillMHZ.Value]));
-  if (trim(RemoteIP)='') or (RemoteIP='127.0.0.1') then
-    ExecAndWait(AppDir + 'rtl_power', PrepareCommandLine+'scan.csv')
-  else
-    ExecAndWait('ssh '+RemoteIP+' "rtl_power', PrepareCommandLine+'"');
-  Data := TStringList.Create;
-  try
-    DataSize := LoadRtlPowerData(Data);
-    InitArrays(DataSize);
-    ParseRtlPowerData(Data, DataSize);
-    AddLineToWaterFall;
-    CalculatePeaks;
-    ProcessChart;
-    ProcessVisualSettings;
-    UpdateFrequencies;
-    DrawSP;
-    DrawWF;
-  finally
-    Data.Free;
+  while Processing do begin
+    Inc(ScanCounter);
+    Log(Format('Scanning %d-%d Hz', [FromMHZ.Value, TillMHZ.Value]));
+    if (trim(RemoteIP)='') or (RemoteIP='127.0.0.1') then
+      ExecAndWait(AppDir + 'rtl_power', PrepareCommandLine+'scan.csv')
+    else
+      ExecAndWait('ssh '+RemoteIP+' "rtl_power', PrepareCommandLine+'"');
+    Data := TStringList.Create;
+    try
+      if FileExists(AppDir+'scan.csv') then
+        DataSize := LoadRtlPowerData(Data)
+      else
+        begin
+          StartStop.Click;
+          exit;
+        end;
+      InitArrays(DataSize);
+      ParseRtlPowerData(Data, DataSize);
+      AddLineToWaterFall;
+      CalculatePeaks;
+      ProcessChart;
+      ProcessVisualSettings;
+      UpdateFrequencies;
+      DrawSP;
+      DrawWF;
+    finally
+      Data.Free;
+    end;
+    Log('Ready...');
+    Application.ProcessMessages;
   end;
-  Log('Ready...');
-  Application.ProcessMessages;
-end;
 end;
 
 procedure TfMain.OptionsButtonClick(Sender: TObject);
@@ -779,6 +800,13 @@ procedure TfMain.PressResetMaxPowerLevel(Sender: TObject; var Key: Char);
 begin
   if not (Key in ['0'..'9', 'k', 'm', 'K', 'M', #8]) then Key := #0;
   MaxPowerReset := True;
+end;
+
+procedure TfMain.TillMHZChange(Sender: TObject);
+begin
+  ResetMaxPowerLevel(Self);
+  if FromMHZ.Value>TillMHZ.Value then
+    FromMHZ.Value:=TillMHZ.Value-1000000;
 end;
 
 procedure TfMain.ResetMaxPowerLevel(Sender: TObject);
