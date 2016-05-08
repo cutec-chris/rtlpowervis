@@ -6,7 +6,7 @@ uses
   LMessages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ComCtrls, StdCtrls, Buttons, StrUtils,
   ExtCtrls, Math, Spin, IniFiles,process, TAGraph, TASeries, TATools,
-  Menus;
+  Menus, types;
 
 type
 
@@ -15,6 +15,7 @@ type
   TfMain = class(TForm)
     Chart1: TChart;
     ChartToolset1: TChartToolset;
+    ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool;
     MenuItem1: TMenuItem;
     Series1: TLineSeries;
     Series2: TLineSeries;
@@ -69,14 +70,16 @@ type
     Crop90: TMenuItem;
     Crop100: TMenuItem;
     Enablepeakhold: TMenuItem;
+    procedure ChartToolset1DataPointCrosshairTool1AfterMouseMove(
+      ATool: TChartTool; APoint: TPoint);
+    procedure ChartToolset1DataPointHintTool1Hint(ATool: TDataPointHintTool;
+      const APoint: TPoint; var AHint: String);
     procedure FromMHZChange(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure StartStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SavePicturesToFilesClick(Sender: TObject);
-    procedure Chart1MouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
     procedure ResetMaxPowerLevel(Sender: TObject);
     procedure PressResetMaxPowerLevel(Sender: TObject; var Key: Char);
     procedure TillMHZChange(Sender: TObject);
@@ -180,6 +183,30 @@ begin
   ResetMaxPowerLevel(Self);
   if FromMHZ.Value>TillMHZ.Value then
     TillMHZ.Value:=FromMHZ.Value+1000000;
+end;
+
+procedure TfMain.ChartToolset1DataPointHintTool1Hint(ATool: TDataPointHintTool;
+  const APoint: TPoint; var AHint: String);
+begin
+  {
+  TLineSeries(Chart1.Series[0]).GetNearestPoint(); GetCursorValues(tmpx, tmpy);
+  Chart1.Hint := TLineSeries(Chart1.Series[0]).GetHorizAxis.LabelValue(tmpX) + ' Hz' + #13#10
+    + TLineSeries(Chart1.Series[0]).GetVertAxis.LabelValue(tmpY) + ' dB';
+
+  }
+end;
+
+procedure TfMain.ChartToolset1DataPointCrosshairTool1AfterMouseMove(
+  ATool: TChartTool; APoint: TPoint);
+var
+  aFreq: Float;
+begin
+  WFCursorX := APoint.X;
+  WFCursorY := 20;
+  aFreq := FromMHZ.Value + ( (TillMHZ.Value - FromMHZ.Value) / WaterFall.Width ) * APoint.x;
+  WaterFall.Hint := Format('%.3f MHz', [aFreq/1000000]);
+  WFCursor:=True;
+  DrawWF;
 end;
 
 procedure TfMain.TunerAGCClick(Sender: TObject);
@@ -473,22 +500,6 @@ begin
   Chart1.Repaint;
 end;
 
-procedure TfMain.Chart1MouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer);
-var
-  tmpX, tmpY: Double;
-begin
-  {
-  Chart1.Series[0].GetCursorValues(tmpx, tmpy);
-  Chart1.Hint := Chart1.Series[0].GetHorizAxis.LabelValue(tmpX) + ' Hz' + #13#10
-    + Chart1.Series[0].GetVertAxis.LabelValue(tmpY) + ' dB';
-
-  SPCursorX := X;
-  SPCursorY := Y;
-  DrawSP;
-  }
-end;
-
 function ExecAndWait(const FileName,
                      Params: ShortString): boolean; export;
 var
@@ -506,8 +517,7 @@ begin
       begin
         if not Processing then
           begin
-            FreeAndNil(aProc);
-            exit;
+            aProc.Input.WriteAnsiString('q'+#13);
           end;
         Application.ProcessMessages;
         sleep(100);
@@ -835,6 +845,7 @@ begin
 
   WFCursorX := X;
   WFCursorY := Y;
+  WFCursor:=True;
   DrawWF;
 end;
 

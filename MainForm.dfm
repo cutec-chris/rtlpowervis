@@ -1,7 +1,7 @@
 object fMain: TfMain
-  Left = 498
+  Left = 494
   Height = 482
-  Top = 241
+  Top = 137
   Width = 764
   Caption = 'rtl-sdr dongle panorama'
   ClientHeight = 482
@@ -18,11 +18,13 @@ object fMain: TfMain
   ShowHint = True
   LCLVersion = '1.7'
   object WaterFall: TPaintBox
-    Left = 0
+    Left = 4
     Height = 193
     Top = 264
-    Width = 764
+    Width = 756
     Align = alClient
+    BorderSpacing.Left = 4
+    BorderSpacing.Right = 4
     Color = clBtnFace
     ParentColor = False
     ParentShowHint = False
@@ -218,7 +220,7 @@ object fMain: TfMain
       Height = 24
       Hint = 'Dongle Nr#'
       Top = 10
-      Width = 30
+      Width = 38
       OnChange = ResetMaxPowerLevel
       OnKeyPress = PressResetMaxPowerLevel
       ParentShowHint = False
@@ -369,7 +371,12 @@ object fMain: TfMain
     Width = 764
     AxisList = <    
       item
+        Grid.Color = clGray
+        TickColor = clWhite
+        AxisPen.Color = clSilver
         Minors = <>
+        Position = 5
+        Title.LabelFont.Color = clWhite
         Title.LabelFont.Orientation = 900
         Title.Caption = 'dB'
       end    
@@ -378,17 +385,19 @@ object fMain: TfMain
         Minors = <>
         Title.Caption = 'Hz'
       end>
+    BackColor = 7171437
     Foot.Brush.Color = clBtnFace
     Foot.Font.Color = clBlue
+    Legend.Font.Color = clCream
     Title.Brush.Color = clBtnFace
-    Title.Font.Color = clBlue
+    Title.Font.Color = clWhite
     Title.Text.Strings = (
       'TChart'
     )
+    Toolset = ChartToolset1
     Align = alTop
     ParentShowHint = False
     ShowHint = True
-    OnMouseMove = Chart1MouseMove
     object Series1: TLineSeries
       Marks.Visible = False
       LinePen.Color = clBlue
@@ -403,10 +412,14 @@ object fMain: TfMain
     end
     object Series3: TLineSeries
       Marks.Visible = False
-      LinePen.Color = clLime
+      LinePen.Color = 7929720
+      LineType = ltNone
       Pointer.HorizSize = 3
+      Pointer.OverrideColor = [ocBrush, ocPen]
+      Pointer.Pen.Color = 11599792
       Pointer.Style = psCircle
       Pointer.VertSize = 3
+      ShowPoints = True
     end
   end
   object PopupMenu1: TPopupMenu
@@ -592,6 +605,9 @@ object fMain: TfMain
   end
   object ChartToolset1: TChartToolset
     left = 54
-    top = 62
+    top = 72
+    object ChartToolset1DataPointCrosshairTool1: TDataPointCrosshairTool
+      OnAfterMouseMove = ChartToolset1DataPointCrosshairTool1AfterMouseMove
+    end
   end
 end
