@@ -1,7 +1,7 @@
 object fMain: TfMain
-  Left = 539
+  Left = 535
   Height = 482
-  Top = 255
+  Top = 151
   Width = 764
   Caption = 'rtl-sdr dongle panorama'
   ClientHeight = 482
@@ -21,10 +21,10 @@ object fMain: TfMain
     Left = 4
     Height = 159
     Top = 298
-    Width = 756
+    Width = 731
     Align = alClient
     BorderSpacing.Left = 4
-    BorderSpacing.Right = 4
+    BorderSpacing.Right = 29
     Color = clBtnFace
     ParentColor = False
     ParentShowHint = False
@@ -369,7 +369,7 @@ object fMain: TfMain
     Left = 0
     Height = 212
     Top = 83
-    Width = 764
+    Width = 739
     AxisList = <    
       item
         Grid.Color = clGray
@@ -397,6 +397,7 @@ object fMain: TfMain
     )
     Toolset = ChartToolset1
     Align = alTop
+    BorderSpacing.Right = 25
     ParentShowHint = False
     ShowHint = True
     object Series1: TLineSeries
@@ -451,6 +452,16 @@ object fMain: TfMain
       ParentColor = False
     end
   end
+  object ScrollBar1: TScrollBar
+    Left = 744
+    Height = 159
+    Top = 298
+    Width = 14
+    Anchors = [akTop, akRight, akBottom]
+    Kind = sbVertical
+    PageSize = 0
+    TabOrder = 5
+  end
   object PopupMenu1: TPopupMenu
     left = 24
     top = 352
@@ -476,69 +487,79 @@ object fMain: TfMain
       object Cropfactor1: TMenuItem
         Caption = 'Crop percent...'
         object Crop0: TMenuItem
+          AutoCheck = True
           Caption = '0%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop10: TMenuItem
+          AutoCheck = True
           Caption = '10%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop20: TMenuItem
+          AutoCheck = True
           Caption = '20%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop30: TMenuItem
+          AutoCheck = True
           Caption = '30%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop40: TMenuItem
+          AutoCheck = True
           Caption = '40%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop50: TMenuItem
+          AutoCheck = True
           Caption = '50%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop60: TMenuItem
+          AutoCheck = True
           Caption = '60%'
+          Checked = True
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop70: TMenuItem
+          AutoCheck = True
           Caption = '70%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop80: TMenuItem
+          AutoCheck = True
           Caption = '80%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop90: TMenuItem
+          AutoCheck = True
           Caption = '90%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
         object Crop100: TMenuItem
+          AutoCheck = True
           Caption = '100%'
+          GroupIndex = 5
           RadioItem = True
-          OnClick = InvertMenuitem
         end
       end
       object DirectSampling: TMenuItem
         Caption = 'Direct sampling'
         Hint = 'Use direct sampling instead of quadrature one'
-        OnClick = InvertMenuitem
       end
       object Enablepeakhold: TMenuItem
         Caption = 'Enable peak hold'
-        OnClick = InvertMenuitem
       end
     end
     object Colors1: TMenuItem
@@ -563,26 +584,21 @@ object fMain: TfMain
       object LeftAxis: TMenuItem
         Caption = 'Show level axis (dB)'
         Hint = 'Show left spectrum axis'
-        OnClick = InvertMenuitem
       end
       object BottomAxis: TMenuItem
         Caption = 'Show frequency axis (Hz)'
         Hint = 'Show bottom spectrum axis'
-        OnClick = InvertMenuitem
       end
       object LimitWaterFall: TMenuItem
         Caption = 'Limit waterfall to screen size'
         Hint = 'Enable this option to limit waterfall image resolution by its real screen size (otherwise 1920*1080)'
-        OnClick = InvertMenuitem
       end
       object DrawTimeMarker: TMenuItem
         Caption = 'Draw time marker'
         Hint = 'Draw time marker at the left side of waterfall'
-        OnClick = InvertMenuitem
       end
       object MarkPeaks: TMenuItem
         Caption = 'Mark peaks'
-        OnClick = InvertMenuitem
       end
     end
     object N3: TMenuItem

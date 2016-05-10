@@ -20,6 +20,7 @@ type
     Label1: TLabel;
     MenuItem1: TMenuItem;
     Panel2: TPanel;
+    ScrollBar1: TScrollBar;
     Series1: TLineSeries;
     Series2: TLineSeries;
     Series3: TLineSeries;
@@ -97,7 +98,6 @@ type
     procedure OptionsButtonClick(Sender: TObject);
     procedure Loadpreset1Click(Sender: TObject);
     procedure Savepreset1Click(Sender: TObject);
-    procedure InvertMenuitem(Sender: TObject);
     procedure Spectrumgraphcolor1Click(Sender: TObject);
     procedure Spectrummaxcolor1Click(Sender: TObject);
     procedure TunerAGCClick(Sender: TObject);
@@ -105,29 +105,31 @@ type
     procedure Showfreqmonitor1Click(Sender: TObject);
     procedure AutoAxisClick(Sender: TObject);
   private
+    WFBitmap: TBitmap;
+    WFTemp : TBitmap;
     procedure AddLineToWaterFall;
     procedure CalculatePeaks;
     procedure DrawSP;
-    procedure DrawWaterFallPicture;
     procedure DrawWF;
     procedure InitArrays(var DataSize: integer);
-    procedure LoadPresetFromFile(F: String);
+    procedure ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
+    function  RoundFreq(var Freq: Double): Integer;
     function  LoadRtlPowerData(var Data: TStringList): integer;
     procedure Log(Band: String; Bin: String = ''; FFT: String = '');
     procedure MainLoop;
     function  PrepareCommandLine: String;
     procedure ProcessVisualSettings;
     procedure ProcessChart;
-    procedure ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
-    function  RoundFreq(var Freq: Double): Integer;
+
+    procedure LoadPresetFromFile(F: String);
     procedure SavePresetToFile(F: String);
     procedure UpdateFrequencies;
   public
   end;
 
 var
-  AppDir: String;
   fMain: TfMain;
+  AppDir: String;
   Ini: TIniFile;
   ScanCounter: Int64 = 0;
   Processing: Boolean = False;
@@ -137,8 +139,6 @@ var
   Peak: Array of Boolean;
 
   RemoteIP : string;
-
-  WFBitmap: TBitmap;
 
   WFCursor: Boolean = False;
   WFCursorX: Integer = -1;
@@ -328,6 +328,7 @@ begin
   LoadPresetFromFile( ChangeFileExt(Application.ExeName, '.ini') );
 
   WFBitmap := TBitmap.Create;
+  WFTemp := TBitmap.Create;
   WFBitmap.PixelFormat := pf24bit;
   if LimitWaterFall.Checked then
     WFBitmap.SetSize(WaterFall.Width, WaterFall.Height)
@@ -346,6 +347,7 @@ procedure TfMain.FormDestroy(Sender: TObject);
 begin
   Frequencies.Free;
   WFBitmap.Free;
+  WFTemp.Free;
 end;
 
 procedure TfMain.FormResize(Sender: TObject);
@@ -353,11 +355,6 @@ begin
   if fMain.Height <= Chart1.Height + 100 then
     if fMain.Height > 160 then
       Chart1.Height := fMain.Height - 150;
-end;
-
-procedure TfMain.InvertMenuitem(Sender: TObject);
-begin
-  (Sender as TMenuItem).Checked := not (Sender as TMenuItem).Checked;
 end;
 
 function CalcRGB(z, min_z, max_z: double): TColor;
@@ -376,29 +373,18 @@ begin
   Result := RGBToColor(Round(coeff*r), Round(coeff*g), 110);
 end;
 
-procedure TfMain.DrawWaterFallPicture;
-begin
-  if LimitWaterFall.Checked then
-    WFBitmap.SetSize(WaterFall.Width, WaterFall.Height)
-  else
-    WFBitmap.SetSize(1920, 1080);
-
-  WaterFall.Canvas.StretchDraw(
-      WaterFall.Canvas.ClipRect,
-      WFBitmap
-  );
-end;
-
 procedure TfMain.AddLineToWaterFall;
 var
   i: integer;
   TempFall: TBitmap;
   min_z, max_z: double;
+  VZoom : real = 20;
 begin
   TempFall := TBitmap.Create;
   try
     TempFall.PixelFormat := pf24bit;
-    TempFall.SetSize(High(Power) + 1, 1);
+    TempFall.SetSize(High(Power) + 1, 1+(Min(ScanCounter,WFBitmap.Height)));
+    WFTemp.SetSize(TempFall.Width,TempFall.Height);
 
     // calculate min_z, max_z
     min_z := 0;
@@ -408,20 +394,19 @@ begin
       if max_z < Power[i] then max_z := Power[i];
     end;
 
+    WFBitmap.SaveToFile('/tmp/wfbitmap.bmp');
+    // shift old waterfall image
+    TempFall.Canvas.Draw(0,1,WFTemp);
+
     // draw pixels line
     for i := 0 to High(Power) do
       TempFall.Canvas.Pixels[i, 0] := CalcRGB(Power[i], min_z, max_z);
 
-    // shift old waterfall image
-    WFBitmap.Canvas.CopyRect(
-      Rect(0, 1, WFBitmap.Width, WFBitmap.Height),
-      WFBitmap.Canvas,
-      WFBitmap.Canvas.ClipRect
-    );
+    WFTemp.Canvas.Draw(0,0,TempFall);
 
     // draw tempfall to waterfall
     WFBitmap.Canvas.StretchDraw(
-        Rect(0, 0, WFBitmap.Width, 1),
+        Rect(0, 0, WFBitmap.Width, round(TempFall.Height*VZoom)),
         TempFall
     );
 
@@ -607,7 +592,12 @@ var
   i: Integer;
   S, S2, DataString: String;
   SourceData: TStringList;
+  LogFile: TFileStream;
 begin
+  if FileExists(AppDir+'log.csv') then
+    LogFile := TFileStream.Create(AppDir+'log.csv',fmOpenReadWrite)
+  else
+    LogFile := TFileStream.Create(AppDir+'log.csv',fmCreate);
   SourceData := TStringList.Create;
   try
     Data.Clear;
@@ -618,6 +608,10 @@ begin
     DeleteFile(AppDir + 'scan.csv');
 
     for S in SourceData do begin
+      LogFile.Position:=LogFile.Size;
+      LogFile.WriteBuffer(S[1],length(s));
+      LogFile.WriteByte(13);
+
       // trim first unnecessary data
       S2 := Copy(S, Pos(',', S)+1, Length(S)-Pos(',', S));
       // cutting other unnecessary things before interesting data
@@ -629,6 +623,7 @@ begin
     DataString := Copy(DataString, 0, Length(DataString)-2);
   finally
     SourceData.Free;
+    LogFile.Free;
   end;
 
   // Loading parsed lines as strings into Data
@@ -829,7 +824,7 @@ end;
 procedure TfMain.WaterFallMouseLeave(Sender: TObject);
 begin
   WFCursor := False;
-  DrawWaterFallPicture;  // to remove red line
+  WaterFall.Invalidate;
 end;
 
 procedure TfMain.WaterFallMouseMove(Sender: TObject; Shift: TShiftState;
@@ -848,7 +843,7 @@ end;
 
 procedure TfMain.DrawWF;
 begin
-  DrawWaterFallPicture;
+  WaterFall.Invalidate;
 
   if WFCursor then begin
     WaterFall.Canvas.Pen.Color := clRed;
@@ -878,7 +873,10 @@ end;
 
 procedure TfMain.WaterFallPaint(Sender: TObject);
 begin
-  DrawWF;  // on form resize etc
+  WaterFall.Canvas.StretchDraw(
+      WaterFall.Canvas.ClipRect,
+      WFBitmap
+  );
 end;
 
 procedure TfMain.Waterfallcolor1Click(Sender: TObject);

@@ -3,11 +3,11 @@
   <ProjectSession>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="3">
+    <Units Count="9">
       <Unit0>
         <Filename Value="rtlpan.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="46"/>
       </Unit0>
       <Unit1>
         <Filename Value="FreqMonitor.pas"/>
@@ -15,8 +15,8 @@
         <ComponentName Value="fFreqMonitor"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <TopLine Value="25"/>
-        <UsageCount Value="21"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="46"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -28,40 +28,148 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="179"/>
-        <CursorPos X="9" Y="202"/>
-        <UsageCount Value="21"/>
+        <TopLine Value="368"/>
+        <CursorPos X="50" Y="387"/>
+        <UsageCount Value="46"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="log.csv"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="5258"/>
+        <CursorPos X="56" Y="1058"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="../../lazarus/lcl/graphics.pp"/>
+        <UnitName Value="Graphics"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1147"/>
+        <CursorPos X="15" Y="1164"/>
+        <UsageCount Value="11"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="../../lazarus/lcl/include/menuitem.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="448"/>
+        <CursorPos Y="468"/>
+        <UsageCount Value="10"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="../../lazarus/components/tachart/tasources.pas"/>
+        <UnitName Value="TASources"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="5"/>
+        <CursorPos Y="493"/>
+        <UsageCount Value="10"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="../../lazarus/lcl/include/rasterimage.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="500"/>
+        <CursorPos Y="523"/>
+        <UsageCount Value="10"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="../../lazarus/lcl/include/canvas.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="25"/>
+        <CursorPos Y="50"/>
+        <UsageCount Value="10"/>
+      </Unit8>
     </Units>
-    <JumpHistory Count="6" HistoryIndex="5">
+    <JumpHistory Count="22" HistoryIndex="21">
       <Position1>
         <Filename Value="MainForm.pas"/>
-        <Caret Line="804" Column="115" TopLine="778"/>
+        <Caret Line="395" Column="63" TopLine="372"/>
       </Position1>
       <Position2>
         <Filename Value="MainForm.pas"/>
-        <Caret Line="128" Column="48" TopLine="227"/>
+        <Caret Line="396" Column="25" TopLine="377"/>
       </Position2>
       <Position3>
         <Filename Value="MainForm.pas"/>
-        <Caret Line="129" Column="48" TopLine="129"/>
+        <Caret Line="395" TopLine="377"/>
       </Position3>
       <Position4>
         <Filename Value="MainForm.pas"/>
-        <Caret Line="130" Column="48" TopLine="130"/>
+        <Caret Line="398" TopLine="377"/>
       </Position4>
       <Position5>
         <Filename Value="MainForm.pas"/>
-        <Caret Line="206" Column="9" TopLine="176"/>
+        <Caret Line="399" TopLine="373"/>
       </Position5>
       <Position6>
         <Filename Value="MainForm.pas"/>
-        <Caret Line="197" Column="3" TopLine="177"/>
+        <Caret Line="398" TopLine="373"/>
       </Position6>
+      <Position7>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="399" TopLine="373"/>
+      </Position7>
+      <Position8>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="398" TopLine="373"/>
+      </Position8>
+      <Position9>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="399" TopLine="373"/>
+      </Position9>
+      <Position10>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="395" Column="30" TopLine="380"/>
+      </Position10>
+      <Position11>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="394" Column="43" TopLine="380"/>
+      </Position11>
+      <Position12>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="396" TopLine="380"/>
+      </Position12>
+      <Position13>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="399" TopLine="380"/>
+      </Position13>
+      <Position14>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="138" Column="5" TopLine="101"/>
+      </Position14>
+      <Position15>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="110" Column="23" TopLine="88"/>
+      </Position15>
+      <Position16>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="111" Column="24" TopLine="92"/>
+      </Position16>
+      <Position17>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="112" Column="27" TopLine="93"/>
+      </Position17>
+      <Position18>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="109" Column="22" TopLine="102"/>
+      </Position18>
+      <Position19>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="331" Column="9" TopLine="324"/>
+      </Position19>
+      <Position20>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="219" Column="3" TopLine="217"/>
+      </Position20>
+      <Position21>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="399" Column="14" TopLine="374"/>
+      </Position21>
+      <Position22>
+        <Filename Value="MainForm.pas"/>
+        <Caret Line="387" Column="25" TopLine="374"/>
+      </Position22>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>
