@@ -1,7 +1,7 @@
 object fMain: TfMain
-  Left = 535
+  Left = 533
   Height = 482
-  Top = 151
+  Top = 99
   Width = 764
   Caption = 'rtl-sdr dongle panorama'
   ClientHeight = 482
@@ -31,6 +31,8 @@ object fMain: TfMain
     OnMouseEnter = WaterFallMouseEnter
     OnMouseLeave = WaterFallMouseLeave
     OnMouseMove = WaterFallMouseMove
+    OnMouseWheelDown = WaterFallMouseWheelDown
+    OnMouseWheelUp = WaterFallMouseWheelUp
     OnPaint = WaterFallPaint
   end
   object Splitter1: TSplitter

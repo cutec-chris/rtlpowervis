@@ -87,6 +87,10 @@ type
     procedure TillMHZChange(Sender: TObject);
     procedure WaterFallMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
+    procedure WaterFallMouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure WaterFallMouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
     procedure WaterFallPaint(Sender: TObject);
     procedure WaterFallMouseLeave(Sender: TObject);
     procedure WaterFallMouseEnter(Sender: TObject);
@@ -111,6 +115,7 @@ type
     procedure CalculatePeaks;
     procedure DrawSP;
     procedure DrawWF;
+    procedure CleanWF;
     procedure InitArrays(var DataSize: integer);
     procedure ParseRtlPowerData(var Data: TStringList; var DataSize: integer);
     function  RoundFreq(var Freq: Double): Integer;
@@ -156,6 +161,8 @@ var
 
   iMaxDb: Integer = 0;
   iMinDb: Integer = -120;
+
+  VZoom : real = 20;
 
 implementation
 
@@ -378,7 +385,6 @@ var
   i: integer;
   TempFall: TBitmap;
   min_z, max_z: double;
-  VZoom : real = 20;
 begin
   TempFall := TBitmap.Create;
   try
@@ -841,19 +847,34 @@ begin
   DrawWF;
 end;
 
+procedure TfMain.WaterFallMouseWheelDown(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  VZoom:=VZoom/2;
+  CleanWF;
+end;
+
+procedure TfMain.WaterFallMouseWheelUp(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  VZoom:=VZoom*2;
+  CleanWF;
+end;
+
 procedure TfMain.DrawWF;
 begin
   WaterFall.Invalidate;
+end;
 
-  if WFCursor then begin
-    WaterFall.Canvas.Pen.Color := clRed;
-    WaterFall.Canvas.MoveTo(WFCursorX, 0);
-    WaterFall.Canvas.LineTo(WFCursorX, WaterFall.Height);
-
-    WaterFall.Canvas.Font.Color := clLime;
-    WaterFall.Canvas.Brush.Style := bsClear;
-    WaterFall.Canvas.TextOut(WFCursorX + 3, WFCursorY - 12, WaterFall.Hint);
-  end;
+procedure TfMain.CleanWF;
+begin
+  WFBitmap.Canvas.Brush.Color:=clBlack;
+  WFBitmap.Canvas.Rectangle(0,0,WFBitmap.Width,WFBitmap.Height);
+  WFBitmap.Canvas.StretchDraw(
+      Rect(0, 0, WFBitmap.Width, round(WFTemp.Height*VZoom)),
+      WFTemp
+  );
+  WaterFall.Invalidate;
 end;
 
 procedure TfMain.DrawSP;
@@ -877,6 +898,15 @@ begin
       WaterFall.Canvas.ClipRect,
       WFBitmap
   );
+  if WFCursor then begin
+    WaterFall.Canvas.Pen.Color := clRed;
+    WaterFall.Canvas.MoveTo(WFCursorX, 0);
+    WaterFall.Canvas.LineTo(WFCursorX, WaterFall.Height);
+
+    WaterFall.Canvas.Font.Color := clLime;
+    WaterFall.Canvas.Brush.Style := bsClear;
+    WaterFall.Canvas.TextOut(WFCursorX + 3, WFCursorY - 12, WaterFall.Hint);
+  end;
 end;
 
 procedure TfMain.Waterfallcolor1Click(Sender: TObject);
